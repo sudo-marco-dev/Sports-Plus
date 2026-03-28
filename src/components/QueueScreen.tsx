@@ -7,6 +7,9 @@ import { Avatar, AvatarFallback } from './ui/avatar';
 import { Input } from './ui/input';
 import { toast } from 'sonner';
 import { MiniProfileCard } from './MiniProfileCard';
+import { useAuth } from '../context/AuthContext';
+import { CertificateView } from './CertificateView';
+import { Certificate } from '../data/mockData';
 
 interface QueueScreenProps {
   onBack: () => void;
@@ -77,6 +80,7 @@ const mockTeamMembers: TeamMember[] = [
 ];
 
 export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onGameComplete, onRewardsEarned }: QueueScreenProps) {
+  const { addPoints } = useAuth();
   const [selectedPlayer, setSelectedPlayer] = useState<any>(null);
   const [players, setPlayers] = useState<Player[]>([]);
   const [userReady, setUserReady] = useState(false);
@@ -109,6 +113,8 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
   const [allReadyMessage, setAllReadyMessage] = useState(false);
   const [hostStarting, setHostStarting] = useState(false);
   const [showRewardScreen, setShowRewardScreen] = useState(false);
+  const [showCertificateView, setShowCertificateView] = useState(false);
+  const [currentCertificate, setCurrentCertificate] = useState<Certificate | null>(null);
 
   useEffect(() => {
     if (gameData) {
@@ -170,13 +176,26 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
     if (gameState === 'rewards') {
       const rewardsTimer = setTimeout(() => {
         setShowRewardScreen(true);
+        
+        // Determine if current user's team won
+        const currentPlayer = players.find(p => p.isCurrentUser);
+        if (currentPlayer && team1Score && team2Score) {
+          const score1 = parseInt(team1Score);
+          const score2 = parseInt(team2Score);
+          const didWin = (currentPlayer.team === 1 && score1 > score2) || 
+                         (currentPlayer.team === 2 && score2 > score1);
+          
+          // Award points based on win/loss
+          addPoints(didWin ? 100 : 20);
+        }
+        
         onRewardsEarned?.(50, 5);
       }, 1000);
       return () => clearTimeout(rewardsTimer);
     } else {
       setShowRewardScreen(false);
     }
-  }, [gameState, onRewardsEarned]);
+  }, [gameState, onRewardsEarned, players, team1Score, team2Score, addPoints]);
 
   const initializePlayers = () => {
     if (!gameData) return;
@@ -613,12 +632,33 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
                 <p className="text-lg font-bold text-gray-900">🏆 {points} Points + 👥 {reliability}% Reliability</p>
               </div>
 
-              <Button
-                onClick={handleReturnToMenu}
-                className="w-full rounded-2xl py-3 font-semibold text-white bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
-              >
-                Back to Home
-              </Button>
+              <div className="space-y-3">
+                <Button
+                  onClick={() => {
+                    const cert: Certificate = {
+                      id: `cert-${Date.now()}`,
+                      gameId: gameData?.id || 'unknown',
+                      sport: gameData?.sport || 'Unknown',
+                      gameName: gameData?.title || 'Game',
+                      venue: gameData?.location || 'Unknown Venue',
+                      date: gameData?.date || new Date().toISOString(),
+                      pointsEarned: points,
+                      playerName: 'Player Name', // This will be updated from currentUser in real implementation
+                    };
+                    setCurrentCertificate(cert);
+                    setShowCertificateView(true);
+                  }}
+                  className="w-full rounded-2xl py-3 font-semibold text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                >
+                  📜 View Certificate
+                </Button>
+                <Button
+                  onClick={handleReturnToMenu}
+                  className="w-full rounded-2xl py-3 font-semibold text-white bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
+                >
+                  Back to Home
+                </Button>
+              </div>
             </div>
           </div>
         </ScrollArea>
@@ -1043,6 +1083,27 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
 
       <ScrollArea className="flex-1 px-6 mt-6">
         <div className="space-y-4 pb-40">
+          {/* Player Count Pill */}
+          <div className="flex justify-center">
+            <div className="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold">
+              {players.length} / {gameData?.maxPlayers || 10} players
+            </div>
+          </div>
+
+          {/* Game Full Banner */}
+          {players.length >= (gameData?.maxPlayers || 10) && (
+            <div className="bg-orange-50 border-2 border-orange-300 rounded-2xl p-4">
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5">
+                  <AlertCircle className="w-5 h-5 text-orange-600" />
+                </div>
+                <div>
+                  <p className="text-orange-900 font-bold text-sm">Game is full — waiting for host to start</p>
+                </div>
+              </div>
+            </div>
+          )}
+          
           {isHost && (
             <div className="bg-purple-50 border border-purple-200 rounded-2xl p-4">
               <div className="flex items-start gap-3">
@@ -1418,6 +1479,17 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
             setSelectedPlayer(null);
             // Can add navigation to full profile if needed
             toast.info('Full profile view coming soon!');
+          }}
+        />
+      )}
+
+      {/* Certificate View Overlay */}
+      {showCertificateView && currentCertificate && (
+        <CertificateView
+          certificate={currentCertificate}
+          onClose={() => {
+            setShowCertificateView(false);
+            setCurrentCertificate(null);
           }}
         />
       )}

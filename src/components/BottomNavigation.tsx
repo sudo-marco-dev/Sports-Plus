@@ -1,4 +1,4 @@
-import { Home, MessageCircle, PlusCircle, Users, UserCircle, Trophy, ListChecks } from 'lucide-react';
+import { Home, MessageCircle, PlusCircle, Users, UserCircle, Trophy, ListChecks, Calendar } from 'lucide-react';
 
 interface BottomNavigationProps {
   activeTab: string;
@@ -20,6 +20,7 @@ export function BottomNavigation({ activeTab, onTabChange, unreadMessages = 0, h
   const tabs = [
     { id: 'home', label: 'Home', icon: Home },
     { id: 'leaderboard', label: 'Ranks', icon: Trophy },
+    { id: 'events', label: 'Events', icon: Calendar },
     { id: 'create', label: createLabel, icon: createIcon },
     { id: 'teams', label: 'Teams', icon: Users },
     { id: 'profile', label: 'Profile', icon: UserCircle },

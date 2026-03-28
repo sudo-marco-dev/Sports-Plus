@@ -1,4 +1,4 @@
-import { Settings, CheckCircle2, Trophy, Award, Upload, Star, Camera, History, Edit2, X, Info, AlertCircle, HeartPulse } from 'lucide-react';
+import { Settings, CheckCircle2, Trophy, Award, Upload, Star, Camera, History, Edit2, X, Info, AlertCircle, HeartPulse, FileText } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
@@ -7,6 +7,8 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { toast } from 'sonner';
 import { NotificationSystem } from './NotificationSystem';
+import { CertificateView } from './CertificateView';
+import { useAuth } from '../context/AuthContext';
 
 interface ProfileScreenProps {
   onSettings: () => void;
@@ -110,6 +112,7 @@ const getReliabilityTier = (score: number) => {
 };
 
 export function ProfileScreen({ onSettings, onViewAchievements, onViewHistory, onVerify, userData }: ProfileScreenProps) {
+  const { currentUser } = useAuth();
   // Health info state
   const [showHealthDialog, setShowHealthDialog] = useState(false);
   const [healthInfo, setHealthInfo] = useState({
@@ -150,6 +153,9 @@ export function ProfileScreen({ onSettings, onViewAchievements, onViewHistory, o
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [userSkillLevel, setUserSkillLevel] = useState<'Casual' | 'Novice' | 'Elite'>(userData?.skillLevel || 'Novice');
   const [selectedSkillLevel, setSelectedSkillLevel] = useState<'Casual' | 'Novice' | 'Elite'>(userSkillLevel);
+  const [showCertificateView, setShowCertificateView] = useState(false);
+  const [selectedCertificate, setSelectedCertificate] = useState<any>(null);
+  const [showWaiverView, setShowWaiverView] = useState(false);
   
   const defaultUserData = {
     name: 'John Doe',
@@ -243,6 +249,11 @@ export function ProfileScreen({ onSettings, onViewAchievements, onViewHistory, o
               <CheckCircle2 className="w-5 h-5 text-white" />
             )}
           </div>
+          {currentUser?.isMinor && (
+            <div className="mt-2 px-2.5 py-1 bg-green-500/20 border border-green-400/50 rounded-lg inline-flex items-center gap-1">
+              <span className="text-green-100 text-xs font-semibold">Minor Account — Parental Consent Verified</span>
+            </div>
+          )}
           {!user.isVerified && (
             <p className="text-white/60 text-sm mt-0.5">Unverified Player</p>
           )}
@@ -569,6 +580,69 @@ export function ProfileScreen({ onSettings, onViewAchievements, onViewHistory, o
           </div>
         </button>
 
+        {/* My Certificates Section */}
+        {currentUser && currentUser.certificates && currentUser.certificates.length > 0 && (
+          <button 
+            onClick={() => {}}
+            className="w-full bg-white rounded-2xl shadow-lg shadow-gray-200/50 p-4 hover:shadow-xl transition-shadow"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-gray-900 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-blue-600" />
+                My Certificates
+              </h3>
+              <span className="text-xs text-blue-600">{currentUser.certificates.length}</span>
+            </div>
+            <div className="grid grid-cols-1 gap-2">
+              {currentUser.certificates.map((cert) => (
+                <button
+                  key={cert.id}
+                  onClick={() => {
+                    setSelectedCertificate(cert);
+                    setShowCertificateView(true);
+                  }}
+                  className="p-3 rounded-xl border-2 border-blue-200 bg-blue-50 hover:bg-blue-100 transition-colors text-left"
+                >
+                  <p className="text-sm font-semibold text-blue-900 mb-1">{cert.gameName}</p>
+                  <p className="text-xs text-blue-700">
+                    {cert.sport} • {new Date(cert.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </button>
+        )}
+
+        {/* Signed Waiver Section */}
+        {currentUser && currentUser.waiverAccepted && (
+          <button 
+            onClick={() => setShowWaiverView(true)}
+            className="w-full bg-white rounded-2xl shadow-lg shadow-gray-200/50 p-4 hover:shadow-xl transition-shadow"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-gray-900 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-green-600" />
+                Signed Waiver
+              </h3>
+              <CheckCircle2 className="w-5 h-5 text-green-600" />
+            </div>
+            <p className="text-xs text-gray-600 mb-2">
+              You have accepted the sports activity liability waiver
+            </p>
+            {currentUser.waiverTimestamp && (
+              <p className="text-xs text-gray-500">
+                Accepted: {new Date(currentUser.waiverTimestamp).toLocaleDateString('en-US', { 
+                  month: 'short', 
+                  day: 'numeric', 
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </p>
+            )}
+          </button>
+        )}
+
         <div className="bg-white rounded-2xl shadow-lg shadow-gray-200/50 p-4">
           <h3 className="text-gray-900 mb-3">Points System</h3>
           <div className="space-y-2 text-sm">
@@ -843,6 +917,95 @@ export function ProfileScreen({ onSettings, onViewAchievements, onViewHistory, o
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Waiver View Modal */}
+      {showWaiverView && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 flex flex-col max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <FileText className="w-6 h-6 text-green-600" />
+                <h2 className="text-xl font-bold text-gray-900">Sports Activity Waiver</h2>
+              </div>
+              <button
+                onClick={() => setShowWaiverView(false)}
+                className="text-gray-500 hover:text-gray-700 font-bold text-xl"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Waiver Content */}
+            <div className="flex-1 overflow-y-auto mb-4 space-y-4">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <p className="text-sm text-gray-800 leading-relaxed">
+                  By joining this game, I acknowledge that sports activities carry inherent physical risks including injury. I voluntarily assume all risks and release Sports Plus, game hosts, and other participants from liability. I confirm I am in adequate physical condition to participate.
+                </p>
+              </div>
+
+              <div className="space-y-2 text-xs text-gray-600">
+                <p>
+                  <strong>Key Points:</strong>
+                </p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>You assume full responsibility for any injuries</li>
+                  <li>You waive your right to sue Sports Plus or participants</li>
+                  <li>You confirm fitness to participate in this sport</li>
+                  <li>You will follow all safety guidelines provided</li>
+                </ul>
+              </div>
+
+              {currentUser?.waiverTimestamp && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <p className="text-xs text-blue-700">
+                    <strong>Acceptance Timestamp:</strong>
+                  </p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    {new Date(currentUser.waiverTimestamp).toLocaleString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      second: '2-digit',
+                      hour12: true,
+                    })}
+                  </p>
+                </div>
+              )}
+
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <p className="text-xs text-green-700">
+                    <strong>Waiver Status:</strong> Accepted
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Close Button */}
+            <Button
+              onClick={() => setShowWaiverView(false)}
+              className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold"
+            >
+              Close
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Certificate View Overlay */}
+      {showCertificateView && selectedCertificate && (
+        <CertificateView
+          certificate={selectedCertificate}
+          onClose={() => {
+            setShowCertificateView(false);
+            setSelectedCertificate(null);
+          }}
+        />
+      )}
     </div>
   );
 }

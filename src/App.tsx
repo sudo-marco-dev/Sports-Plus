@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Bell } from 'lucide-react';
 import { SplashScreen } from './components/SplashScreen';
 import { OnboardingScreen } from './components/OnboardingScreen';
 import { LoginScreen } from './components/LoginScreen';
@@ -24,7 +25,11 @@ import { QueueScreen } from './components/QueueScreen';
 import { CreatorGameViewScreen } from './components/CreatorGameViewScreen';
 import { PostGameSummaryScreen } from './components/PostGameSummaryScreen';
 import { ParticipantFeedbackScreen } from './components/ParticipantFeedbackScreen';
+import { EventsScreen } from './screens/EventsScreen';
 import { BottomNavigation } from './components/BottomNavigation';
+import { NotificationPanel } from './components/NotificationPanel';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { mockGames, mockUsers } from './data/mockData';
 import { Toaster, toast } from 'sonner';
 
 type AppScreen = 
@@ -38,6 +43,7 @@ type AppScreen =
   | 'create'
   | 'queue'
   | 'teams'
+  | 'events'
   | 'profile'
   | 'history'
   | 'points-badges'
@@ -54,7 +60,9 @@ type AppScreen =
   | 'post-game-summary'
   | 'participant-feedback';
 
-export default function App() {
+export function AppContent() {
+  const { currentUser, unreadCount, addNotification } = useAuth();
+  const [isNotificationPanelOpen, setIsNotificationPanelOpen] = useState(false);
   const [currentScreen, setCurrentScreen] = useState<AppScreen>('splash');
   const [activeTab, setActiveTab] = useState('home');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -140,6 +148,9 @@ export default function App() {
       case 'leaderboard':
         setCurrentScreen('leaderboard');
         break;
+      case 'events':
+        setCurrentScreen('events');
+        break;
       case 'chat':
         setCurrentScreen('chat');
         setSelectedChatId(null);
@@ -178,6 +189,13 @@ export default function App() {
         return;
       }
       
+      // Check if game is full
+      const game = mockGames.find((g) => g.id === gameId);
+      if (game && game.players.length >= game.maxPlayers) {
+        toast.error('Sorry, this game is already full.');
+        return;
+      }
+      
       setJoinedGames([gameId]);
       
       // Mock game data for the joined game
@@ -192,6 +210,18 @@ export default function App() {
       };
       setJoinedGameData(newJoinedGameData);
       setSelectedGameId(gameId);
+      
+      // Trigger PWD notification to host if applicable
+      const game = mockGames.find((g) => g.id === gameId);
+      if (game && currentUser.isPWD && game.hostId !== currentUser.id) {
+        addNotification({
+          toUserId: game.hostId,
+          message: `${currentUser.name} (PWD player) joined your game "${game.title}"`,
+          type: 'pwd_joined',
+          timestamp: new Date().toISOString(),
+          read: false,
+        });
+      }
       
       toast.success('Joined game successfully!');
       // Navigate to QUEUE screen (same as clicking Queue button)
@@ -340,6 +370,7 @@ export default function App() {
     'chat',
     'create',
     'queue',
+    'events',
     'teams',
     'profile',
     'history',
@@ -357,6 +388,25 @@ export default function App() {
 
   return (
     <div className="size-full flex items-center justify-center bg-gray-100">
+      {/* Notification Bell Icon - positioned in header if authenticated */}
+      {isAuthenticated && (
+        <div className="fixed top-4 right-4 z-50">
+          <button
+            onClick={() => setIsNotificationPanelOpen(!isNotificationPanelOpen)}
+            className="relative p-3 bg-white rounded-full shadow-lg hover:shadow-xl transition-shadow"
+          >
+            <Bell className="w-5 h-5 text-gray-700" strokeWidth={1.5} />
+            {unreadCount > 0 && (
+              <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </div>
+            )}
+          </button>
+          <NotificationPanel isOpen={isNotificationPanelOpen} onClose={() => setIsNotificationPanelOpen(false)} />
+        </div>
+      )}
+
+      {/* Main App Content */}
       {currentScreen === 'splash' && (
         <SplashScreen onComplete={() => setCurrentScreen('onboarding')} />
       )}
@@ -451,6 +501,20 @@ export default function App() {
       )}
 
       {currentScreen === 'leaderboard' && <LeaderboardScreen />}
+
+      {currentScreen === 'events' && (
+        <EventsScreen 
+          onBack={() => {
+            setCurrentScreen('home');
+            setActiveTab('home');
+          }}
+          onJoinGame={handleJoinGame}
+          onJoinTournament={(tournamentId) => {
+            // TODO: Implement tournament join flow
+            toast.info(`Tournament ${tournamentId} - registration coming soon`);
+          }}
+        />
+      )}
 
       {currentScreen === 'teams' && <TeamsScreen />}
 
@@ -599,6 +663,14 @@ export default function App() {
       )}
       
       <Toaster position="top-center" />
-    </div>
+      </div>
+    );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }

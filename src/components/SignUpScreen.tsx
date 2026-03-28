@@ -24,15 +24,41 @@ export function SignUpScreen({ onSignUp, onBack }: SignUpScreenProps) {
     email: '',
     password: '',
     confirmPassword: '',
-    age: '',
+    dateOfBirth: '',
+    age: 0,
+    isMinor: false,
     selectedSports: [] as string[],
     skillLevel: '',
     location: '',
     agreedToTerms: false,
+    parentGuardianName: '',
+    parentEmail: '',
+    hasParentalConsent: false,
   });
   const [idUploaded, setIdUploaded] = useState(false);
   const [faceVerified, setFaceVerified] = useState(false);
   const [showFaceVerification, setShowFaceVerification] = useState(false);
+  const [showParentalConsentModal, setShowParentalConsentModal] = useState(false);
+
+  const computeAge = (birthDate: string): number => {
+    if (!birthDate) return 0;
+    const today = new Date();
+    const birth = new Date(birthDate);
+    const age = Math.floor((today.getTime() - birth.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
+    return Math.max(0, age);
+  };
+
+  const handleDateOfBirthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const dateOfBirth = e.target.value;
+    const age = computeAge(dateOfBirth);
+    const isMinor = age < 18;
+    setFormData(prev => ({
+      ...prev,
+      dateOfBirth,
+      age,
+      isMinor,
+    }));
+  };
 
   const toggleSport = (sport: string) => {
     setFormData(prev => ({
@@ -81,8 +107,33 @@ export function SignUpScreen({ onSignUp, onBack }: SignUpScreenProps) {
       toast.error('Please agree to the terms and conditions');
       return;
     }
+
+    // If user is a minor and hasn't provided parental consent, show modal
+    if (formData.isMinor && !formData.hasParentalConsent) {
+      setShowParentalConsentModal(true);
+      return;
+    }
     
     onSignUp({ ...formData, isVerified: true, faceVerified: true });
+  };
+
+  const handleParentalConsentSubmit = (parentGuardianName: string, parentEmail: string) => {
+    setFormData(prev => ({
+      ...prev,
+      parentGuardianName,
+      parentEmail,
+      hasParentalConsent: true,
+    }));
+    setShowParentalConsentModal(false);
+    // Proceed with signup after consent is given
+    onSignUp({ 
+      ...formData, 
+      parentGuardianName,
+      parentEmail,
+      hasParentalConsent: true,
+      isVerified: true, 
+      faceVerified: true 
+    });
   };
 
   return (
@@ -185,19 +236,24 @@ export function SignUpScreen({ onSignUp, onBack }: SignUpScreenProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="age" className="text-gray-700">Age</Label>
+              <Label htmlFor="dateOfBirth" className="text-gray-700">Date of Birth</Label>
               <div className="relative">
                 <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <Input
-                  id="age"
-                  type="number"
-                  value={formData.age}
-                  onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-                  placeholder="25"
+                  id="dateOfBirth"
+                  type="date"
+                  value={formData.dateOfBirth}
+                  onChange={handleDateOfBirthChange}
                   className="pl-12 h-12 rounded-xl border-gray-200 bg-gray-50"
                   required
                 />
               </div>
+              {formData.dateOfBirth && formData.age > 0 && (
+                <p className="text-xs text-gray-600">Age: {formData.age} years old</p>
+              )}
+              {formData.isMinor && (
+                <p className="text-xs text-orange-600 font-semibold">⚠️ Parental consent will be required</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -390,6 +446,102 @@ export function SignUpScreen({ onSignUp, onBack }: SignUpScreenProps) {
           </form>
         </div>
       </ScrollArea>
+
+      {/* Parental Consent Modal */}
+      {showParentalConsentModal && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 relative max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setShowParentalConsentModal(false)}
+              className="absolute right-4 top-4 p-2 hover:bg-gray-100 rounded-full"
+            >
+              ✕
+            </button>
+            
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">Parental Consent Required</h2>
+              <p className="text-sm text-gray-600 mt-1">
+                Since you are under 18, a parent or guardian must provide consent before your account can be created.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="parentGuardianName" className="text-sm text-gray-700">Parent/Guardian Full Name *</Label>
+                <Input
+                  id="parentGuardianName"
+                  type="text"
+                  placeholder="e.g., Jane Doe"
+                  value={formData.parentGuardianName}
+                  onChange={(e) => setFormData({ ...formData, parentGuardianName: e.target.value })}
+                  className="mt-1 h-10 rounded-lg border-gray-200 bg-gray-50"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="parentEmail" className="text-sm text-gray-700">Parent/Guardian Email *</Label>
+                <Input
+                  id="parentEmail"
+                  type="email"
+                  placeholder="parent@example.com"
+                  value={formData.parentEmail}
+                  onChange={(e) => setFormData({ ...formData, parentEmail: e.target.value })}
+                  className="mt-1 h-10 rounded-lg border-gray-200 bg-gray-50"
+                  required
+                />
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-xs text-blue-700 leading-relaxed">
+                  📧 A confirmation email will be sent to the parent/guardian to verify consent. The account will be activated once consent is confirmed.
+                </p>
+              </div>
+
+              <div className="flex items-start gap-3 py-2">
+                <Checkbox
+                  id="parentalConsent"
+                  checked={formData.parentGuardianName !== '' && formData.parentEmail !== ''}
+                  disabled
+                  className="mt-1"
+                />
+                <label htmlFor="parentalConsent" className="text-xs text-gray-600 leading-relaxed">
+                  I confirm that the information provided above is accurate and I am the parent/guardian of the account holder.
+                </label>
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowParentalConsentModal(false)}
+                className="flex-1 h-10 rounded-lg"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={() => {
+                  if (!formData.parentGuardianName.trim() || !formData.parentEmail.trim()) {
+                    toast.error('Please fill in all fields');
+                    return;
+                  }
+                  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.parentEmail)) {
+                    toast.error('Please enter a valid email address');
+                    return;
+                  }
+                  handleParentalConsentSubmit(formData.parentGuardianName, formData.parentEmail);
+                  toast.success('Parental consent submitted! Account created successfully.');
+                }}
+                className="flex-1 h-10 rounded-lg bg-green-600 hover:bg-green-700"
+              >
+                Continue
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Face Verification Dialog */}
       <FaceVerificationDialog

@@ -46,7 +46,7 @@ export function CreateGameScreen({
     location: '',
     date: '',
     time: '',
-    maxPlayers: '',
+    maxPlayers: '5',
   });
   const [showLimitDialog, setShowLimitDialog] = useState(false);
   const [showMapDialog, setShowMapDialog] = useState(false);
@@ -303,19 +303,22 @@ export function CreateGameScreen({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="maxPlayers" className="text-gray-700">Maximum Players</Label>
+              <Label htmlFor="maxPlayers" className="text-gray-700">Max Players</Label>
               <div className="relative">
                 <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <Input
                   id="maxPlayers"
                   type="number"
+                  min="2"
+                  max="20"
                   value={formData.maxPlayers}
                   onChange={(e) => setFormData({ ...formData, maxPlayers: e.target.value })}
-                  placeholder="10"
+                  placeholder="5"
                   className="pl-12 h-12 rounded-xl border-gray-200 bg-gray-50"
                   required
                 />
               </div>
+              <p className="text-xs text-gray-500">Recommended: 5 for most sports</p>
             </div>
 
             <div className="pt-4 space-y-3">

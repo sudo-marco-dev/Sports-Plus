@@ -5,6 +5,9 @@ import { Badge } from './ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { NotificationSystem } from './NotificationSystem';
+import { WaiverModal } from './WaiverModal';
+import { useAuth } from '../context/AuthContext';
+import { toast } from 'sonner';
 
 interface Game {
   id: string;
@@ -42,7 +45,7 @@ const mockGames: Game[] = [
     location: 'Brgy. Tiniguiban',
     date: 'Dec 16, 2025',
     time: '5:00 PM',
-    slots: { current: 6, max: 12 },
+    slots: { current: 5, max: 5 },
     organizer: { name: 'Sarah Miller', verified: true, rating: 4.9 },
     distance: '1.2 km',
     description: 'Evening casual volleyball. Fun and relaxed atmosphere!',
@@ -144,12 +147,15 @@ interface HomeScreenProps {
 }
 
 export function HomeScreen({ onOpenChat, myGames = [], onManageGame, onJoinGame, joinedGames = [], onOpenQueue, onOpenMessages, onRequestLocation, onRemoveJoinedGame }: HomeScreenProps) {
+  const { currentUser, updateUser } = useAuth();
   const [view, setView] = useState<'map' | 'list'>('list');
   const [selectedSport, setSelectedSport] = useState('all');
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showLocationDialog, setShowLocationDialog] = useState(false);
   const [pendingGameId, setPendingGameId] = useState<string | null>(null);
+  const [showWaiverModal, setShowWaiverModal] = useState(false);
+  const [selectedGameName, setSelectedGameName] = useState('');
 
   const toggleJoinGame = (gameId: string) => {
     // Check if trying to join (not already joined)
@@ -165,9 +171,39 @@ export function HomeScreen({ onOpenChat, myGames = [], onManageGame, onJoinGame,
   const handleLocationPermission = (granted: boolean) => {
     setShowLocationDialog(false);
     if (granted && pendingGameId) {
-      onRequestLocation?.();
-      onJoinGame?.(pendingGameId);
+      // Check if user has accepted waiver
+      if (currentUser && !currentUser.waiverAccepted) {
+        const game = mockGames.find(g => g.id === pendingGameId);
+        setSelectedGameName(game?.title || 'this game');
+        setShowWaiverModal(true);
+      } else {
+        // Waiver already accepted, proceed with join
+        onRequestLocation?.();
+        onJoinGame?.(pendingGameId);
+      }
     }
+    setPendingGameId(null);
+  };
+
+  const handleWaiverAccept = () => {
+    setShowWaiverModal(false);
+    if (currentUser) {
+      // Update user with waiver acceptance
+      updateUser({
+        waiverAccepted: true,
+        waiverTimestamp: new Date().toISOString(),
+      });
+      toast.success('Waiver accepted! Joining game...');
+      // Proceed with join
+      if (pendingGameId) {
+        onRequestLocation?.();
+        onJoinGame?.(pendingGameId);
+      }
+    }
+  };
+
+  const handleWaiverCancel = () => {
+    setShowWaiverModal(false);
     setPendingGameId(null);
   };
 
@@ -393,7 +429,9 @@ export function HomeScreen({ onOpenChat, myGames = [], onManageGame, onJoinGame,
               ))}
             </div>
 
-            {filteredGames.map((game) => (
+            {filteredGames.map((game) => {
+              const isFull = game.slots.current >= game.slots.max;
+              return (
               <div key={game.id} className="bg-white rounded-2xl shadow-lg shadow-gray-200/50 p-4 space-y-3">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3">
@@ -412,9 +450,12 @@ export function HomeScreen({ onOpenChat, myGames = [], onManageGame, onJoinGame,
                       </div>
                     </div>
                   </div>
-                  <Badge className={getSkillBadgeColor(game.skillLevels)}>
-                    {getSkillLabel(game.skillLevels)}
-                  </Badge>
+                  <div className="flex gap-2 items-start">
+                    {isFull && <Badge className="bg-red-600 text-white hover:bg-red-700">Full</Badge>}
+                    <Badge className={getSkillBadgeColor(game.skillLevels)}>
+                      {getSkillLabel(game.skillLevels)}
+                    </Badge>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 text-sm">
@@ -426,9 +467,9 @@ export function HomeScreen({ onOpenChat, myGames = [], onManageGame, onJoinGame,
                     <Calendar className="w-4 h-4" />
                     <span>{game.date}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-gray-600">
+                  <div className={`flex items-center gap-2 ${isFull ? 'text-gray-600' : 'text-green-600'}`}>
                     <Users className="w-4 h-4" />
-                    <span>{game.slots.current}/{game.slots.max} players</span>
+                    <span className="font-semibold">{game.slots.current}/{game.slots.max} players</span>
                   </div>
                   <div className="text-gray-600">
                     📍 {game.distance}
@@ -437,14 +478,21 @@ export function HomeScreen({ onOpenChat, myGames = [], onManageGame, onJoinGame,
 
                 <div className="flex gap-2">
                   <Button 
-                    onClick={() => toggleJoinGame(game.id)}
+                    onClick={() => {
+                      if (!isFull) {
+                        toggleJoinGame(game.id);
+                      }
+                    }}
+                    disabled={isFull && !joinedGames.includes(game.id)}
                     className={`flex-1 rounded-xl transition-all font-semibold ${
                       joinedGames.includes(game.id)
                         ? 'bg-red-600 hover:bg-red-700 text-white'
+                        : isFull
+                        ? 'bg-gray-400 text-white cursor-not-allowed opacity-50'
                         : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white'
                     }`}
                   >
-                    {joinedGames.includes(game.id) ? 'Leave Game' : 'Join Game'}
+                    {joinedGames.includes(game.id) ? 'Leave Game' : isFull ? 'Game Full' : 'Join Game'}
                   </Button>
                   {joinedGames.includes(game.id) && (
                     <Button
@@ -464,7 +512,8 @@ export function HomeScreen({ onOpenChat, myGames = [], onManageGame, onJoinGame,
                   </Button>
                 </div>
               </div>
-            ))}
+            );
+            })}
           </>
         )}
       </div>
@@ -574,6 +623,14 @@ export function HomeScreen({ onOpenChat, myGames = [], onManageGame, onJoinGame,
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Waiver Modal */}
+      <WaiverModal
+        isOpen={showWaiverModal}
+        onAccept={handleWaiverAccept}
+        onCancel={handleWaiverCancel}
+        gameName={selectedGameName}
+      />
     </div>
   );
 }
