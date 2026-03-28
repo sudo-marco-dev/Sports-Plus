@@ -90,6 +90,12 @@ export function MiniProfileCard({ user, onClose, onViewFullProfile }: MiniProfil
             {user.isVerified && (
               <CheckCircle2 className="size-5 text-white" />
             )}
+            {typeof user.pwdStatus === 'string' && user.pwdStatus !== '' && user.pwdStatus !== 'None' && (
+              <div className="flex items-center gap-1 ml-2">
+                <Badge className="bg-red-100 text-red-700">PWD</Badge>
+                <span className="text-xs text-white">{user.pwdStatus === 'Other' && typeof user.pwdOther === 'string' && user.pwdOther ? user.pwdOther : user.pwdStatus}</span>
+              </div>
+            )}
           </div>
           <p className="text-white/80 text-sm mt-1">@{user.username}</p>
           <p className="text-white/60 text-xs mt-0.5">ID: {user.userId}</p>

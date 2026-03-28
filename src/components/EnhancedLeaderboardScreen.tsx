@@ -41,11 +41,11 @@ export function LeaderboardScreen({ onBack }: LeaderboardScreenProps) {
 
   // Mock data
   const topRatedPlayers: Player[] = [
-    { id: '1', name: 'Carlos Reyes', username: 'carlos_rey', userId: 'SP2025-1001', avatar: '', score: 4.9, gamesPlayed: 32, rating: 4.9, barangay: 'Brgy. San Pedro', isVerified: true, rank: 1, change: 0, reliabilityScore: 98, achievements: ['MVP', 'Perfect Attendance', '50 Games'] },
+    { id: '1', name: 'Carlos Reyes', username: 'carlos_rey', userId: 'SP2025-1001', avatar: '', score: 4.9, gamesPlayed: 32, rating: 4.9, barangay: 'Brgy. San Pedro', isVerified: true, rank: 1, change: 0, reliabilityScore: 98, achievements: ['MVP', 'Perfect Attendance', '50 Games'], pwdStatus: 'Wheelchair user' },
     { id: '2', name: 'Maria Santos', username: 'maria_s', userId: 'SP2025-1002', avatar: '', score: 4.8, gamesPlayed: 28, rating: 4.8, barangay: 'Brgy. Bancao-Bancao', isVerified: true, rank: 2, change: 1, reliabilityScore: 95, achievements: ['Team Player', '25 Games'] },
-    { id: '3', name: 'Juan dela Cruz', username: 'juan_dc', userId: 'SP2025-1003', avatar: '', score: 4.7, gamesPlayed: 25, rating: 4.7, barangay: 'Brgy. Mandaragat', isVerified: true, rank: 3, change: -1, reliabilityScore: 92, achievements: ['First Game', '10 Games'] },
+    { id: '3', name: 'Juan dela Cruz', username: 'juan_dc', userId: 'SP2025-1003', avatar: '', score: 4.7, gamesPlayed: 25, rating: 4.7, barangay: 'Brgy. Mandaragat', isVerified: true, rank: 3, change: -1, reliabilityScore: 92, achievements: ['First Game', '10 Games'], pwdStatus: 'Visually impaired' },
     { id: '4', name: 'Ana Lopez', username: 'ana_lopez', userId: 'SP2025-1004', avatar: '', score: 4.6, gamesPlayed: 22, rating: 4.6, barangay: 'Brgy. Bagong Sikat', isVerified: true, rank: 4, change: 2, reliabilityScore: 90, achievements: ['Quick Starter'] },
-    { id: '5', name: 'Pedro Martinez', username: 'pedro_m', userId: 'SP2025-1005', avatar: '', score: 4.5, gamesPlayed: 20, rating: 4.5, barangay: 'Brgy. San Jose', isVerified: true, rank: 5, change: 0, reliabilityScore: 88, achievements: ['Rookie'] },
+    { id: '5', name: 'Pedro Martinez', username: 'pedro_m', userId: 'SP2025-1005', avatar: '', score: 4.5, gamesPlayed: 20, rating: 4.5, barangay: 'Brgy. San Jose', isVerified: true, rank: 5, change: 0, reliabilityScore: 88, achievements: ['Rookie'], pwdStatus: 'Other', pwdOther: 'Speech impairment' },
   ];
 
   const mostVerifiedPlayers: Player[] = [
@@ -249,6 +249,8 @@ export function LeaderboardScreen({ onBack }: LeaderboardScreenProps) {
             gamesPlayed: selectedPlayer.gamesPlayed,
             reliabilityScore: selectedPlayer.reliabilityScore,
             achievements: selectedPlayer.achievements,
+            pwdStatus: selectedPlayer.pwdStatus || '',
+            pwdOther: selectedPlayer.pwdOther || '',
           }}
           onClose={() => setSelectedPlayer(null)}
           onViewFullProfile={() => {

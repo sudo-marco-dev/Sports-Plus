@@ -1,4 +1,4 @@
-import { Settings, CheckCircle2, Trophy, Award, Upload, Star, Camera, History, Edit2, X, Info, AlertCircle } from 'lucide-react';
+import { Settings, CheckCircle2, Trophy, Award, Upload, Star, Camera, History, Edit2, X, Info, AlertCircle, HeartPulse } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
@@ -110,6 +110,39 @@ const getReliabilityTier = (score: number) => {
 };
 
 export function ProfileScreen({ onSettings, onViewAchievements, onViewHistory, onVerify, userData }: ProfileScreenProps) {
+  // Health info state
+  const [showHealthDialog, setShowHealthDialog] = useState(false);
+  const [healthInfo, setHealthInfo] = useState({
+    emergencyContactName: '',
+    emergencyContactPhone: '',
+    medicalConditions: '',
+    injuryHistory: '',
+    currentMedication: '',
+    pwdStatus: '',
+    pwdOther: '',
+    healthNotes: '',
+  });
+  const [healthErrors, setHealthErrors] = useState<{ emergencyContact?: string }>({});
+
+  const handleHealthChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    setHealthInfo({ ...healthInfo, [e.target.name]: e.target.value });
+  };
+
+  const handleSaveHealth = () => {
+    let errors: { emergencyContactName?: string; emergencyContactPhone?: string } = {};
+    if (!healthInfo.emergencyContactName.trim()) {
+      errors.emergencyContactName = 'Emergency contact name is required.';
+    }
+    if (!healthInfo.emergencyContactPhone.trim()) {
+      errors.emergencyContactPhone = 'Emergency contact phone is required.';
+    } else if (!/^\+?\d{7,15}$/.test(healthInfo.emergencyContactPhone.trim())) {
+      errors.emergencyContactPhone = 'Enter a valid phone number.';
+    }
+    setHealthErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+    setShowHealthDialog(false);
+    toast.success('Health info updated!');
+  };
   const [showVerificationDialog, setShowVerificationDialog] = useState(false);
   const [showProfilePictureDialog, setShowProfilePictureDialog] = useState(false);
   const [showEditSkillDialog, setShowEditSkillDialog] = useState(false);
@@ -222,7 +255,190 @@ export function ProfileScreen({ onSettings, onViewAchievements, onViewHistory, o
         </div>
       </div>
 
-      <div className="px-6 -mt-4 space-y-4">
+      <div className="px-6 mt-6 space-y-4">
+        {/* PWD Badge Indicator - moved to header */}
+        {healthInfo.pwdStatus && healthInfo.pwdStatus !== 'None' && (
+          <div className="flex items-center gap-2 justify-center mt-2 mb-2">
+            <Badge className="bg-red-100 text-red-700">PWD</Badge>
+            <span className="text-xs text-gray-700">{healthInfo.pwdStatus === 'Other' ? healthInfo.pwdOther : healthInfo.pwdStatus}</span>
+          </div>
+        )}
+                <div className="bg-white rounded-2xl shadow-lg shadow-gray-200/50 p-4 mb-2">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-gray-900 flex items-center gap-2">
+                      <HeartPulse className="w-5 h-5 text-red-500" />
+                      Health & Safety
+                    </h3>
+                    <button
+                      onClick={() => setShowHealthDialog(true)}
+                      className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      <Edit2 className="w-4 h-4 text-blue-600" />
+                    </button>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Emergency Contact Name</span>
+                      <span className="text-gray-900">{healthInfo.emergencyContactName || <span className="text-gray-400">Not set</span>}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Emergency Contact Phone</span>
+                      <span className="text-gray-900">{healthInfo.emergencyContactPhone || <span className="text-gray-400">Not set</span>}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Medical Conditions</span>
+                      <span className="text-gray-900">{healthInfo.medicalConditions || <span className="text-gray-400">None</span>}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Injury History</span>
+                      <span className="text-gray-900">{healthInfo.injuryHistory || <span className="text-gray-400">None</span>}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Current Medication</span>
+                      <span className="text-gray-900">{healthInfo.currentMedication || <span className="text-gray-400">None</span>}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">PWD Status</span>
+                      <span className="text-gray-900">{healthInfo.pwdStatus || <span className="text-gray-400">None</span>}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Health Notes</span>
+                      <span className="text-gray-900">{healthInfo.healthNotes || <span className="text-gray-400">None</span>}</span>
+                    </div>
+                  </div>
+                </div>
+              {/* Health Update Dialog */}
+              <Dialog open={showHealthDialog} onOpenChange={setShowHealthDialog}>
+                <DialogContent className="max-w-[90%] rounded-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Health & Safety Information</DialogTitle>
+                    <DialogDescription>
+                      Please provide your health information. Emergency contact is required for event participation. All other fields are optional and private.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form className="space-y-4 pt-4" onSubmit={e => { e.preventDefault(); handleSaveHealth(); }}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Emergency Contact Name <span className="text-red-500">*</span></label>
+                        <input
+                          type="text"
+                          name="emergencyContactName"
+                          value={healthInfo.emergencyContactName}
+                          onChange={handleHealthChange}
+                          className="w-full p-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Full Name"
+                          required
+                        />
+                        {healthErrors.emergencyContactName && (
+                          <p className="text-xs text-red-500 mt-1">{healthErrors.emergencyContactName}</p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Emergency Contact Phone <span className="text-red-500">*</span></label>
+                        <input
+                          type="tel"
+                          name="emergencyContactPhone"
+                          value={healthInfo.emergencyContactPhone}
+                          onChange={handleHealthChange}
+                          className="w-full p-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="e.g. +639123456789"
+                          required
+                        />
+                        {healthErrors.emergencyContactPhone && (
+                          <p className="text-xs text-red-500 mt-1">{healthErrors.emergencyContactPhone}</p>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Medical Conditions</label>
+                      <input
+                        type="text"
+                        name="medicalConditions"
+                        value={healthInfo.medicalConditions}
+                        onChange={handleHealthChange}
+                        className="w-full p-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="e.g. Asthma, Diabetes"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Injury History</label>
+                      <input
+                        type="text"
+                        name="injuryHistory"
+                        value={healthInfo.injuryHistory}
+                        onChange={handleHealthChange}
+                        className="w-full p-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="e.g. Sprained ankle"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Current Medication</label>
+                      <input
+                        type="text"
+                        name="currentMedication"
+                        value={healthInfo.currentMedication}
+                        onChange={handleHealthChange}
+                        className="w-full p-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="e.g. Ibuprofen"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">PWD Status</label>
+                      <select
+                        name="pwdStatus"
+                        value={healthInfo.pwdStatus}
+                        onChange={handleHealthChange}
+                        className="w-full p-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Select classification</option>
+                        <option value="None">None</option>
+                        <option value="Psychosocial Disability">Psychosocial Disability</option>
+                        <option value="Visual Disability">Visual Disability</option>
+                        <option value="Physical Disability">Physical Disability</option>
+                        <option value="Speech and Language Impairment">Speech and Language Impairment</option>
+                        <option value="Other">Other</option>
+                      </select>
+                      {healthInfo.pwdStatus === 'Other' && (
+                        <input
+                          type="text"
+                          name="pwdOther"
+                          value={healthInfo.pwdOther}
+                          onChange={handleHealthChange}
+                          className="w-full mt-2 p-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Please specify your PWD status"
+                        />
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Health Notes</label>
+                      <textarea
+                        name="healthNotes"
+                        value={healthInfo.healthNotes}
+                        onChange={handleHealthChange}
+                        className="w-full p-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Any other info"
+                        rows={2}
+                      />
+                    </div>
+                    <div className="flex gap-3 pt-4">
+                      <Button
+                        type="button"
+                        onClick={() => setShowHealthDialog(false)}
+                        variant="outline"
+                        className="flex-1 rounded-2xl"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        className="flex-1 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        Save
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
         <button 
           onClick={() => setShowReliabilityInfoDialog(true)}
           className="w-full bg-white rounded-2xl shadow-xl shadow-gray-200/50 p-4 hover:shadow-2xl transition-all text-left"
