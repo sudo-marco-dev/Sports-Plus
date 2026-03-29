@@ -30,6 +30,7 @@ import { TeamDetailScreen } from './screens/TeamDetailScreen';
 import { TournamentScreen } from './screens/TournamentScreen';
 import { TournamentDetailScreen } from './screens/TournamentDetailScreen';
 import { EventsScreen } from './screens/EventsScreen';
+import { SocialsScreen } from './screens/SocialsScreen';
 import { BottomNavigation } from './components/BottomNavigation';
 import { NotificationPanel } from './components/NotificationPanel';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -52,6 +53,7 @@ type AppScreen =
   | 'tournaments'
   | 'tournament-detail'
   | 'schedules'
+  | 'socials'
   | 'profile'
   | 'history'
   | 'points-badges'
@@ -176,6 +178,9 @@ export function AppContent() {
       case 'teams':
         setCurrentScreen('teams');
         break;
+      case 'socials':
+        setCurrentScreen('socials');
+        break;
       case 'profile':
         setCurrentScreen('profile');
         break;
@@ -205,6 +210,15 @@ export function AppContent() {
         toast.error('Sorry, this game is already full.');
         return;
       }
+      if (foundGame && currentUser.isPWD && foundGame.hostId !== currentUser.id) {
+        addNotification({
+          toUserId: foundGame.hostId,
+          message: `${currentUser.name} (PWD player) joined "${foundGame.title}"`,
+          type: 'pwd_joined',
+          timestamp: new Date().toISOString(),
+          read: false,
+        });
+      }
       
       setJoinedGames([gameId]);
       
@@ -222,16 +236,6 @@ export function AppContent() {
       setSelectedGameId(gameId);
       
       // Trigger PWD notification to host if applicable
-      const game = mockGames.find((g) => g.id === gameId);
-      if (game && currentUser.isPWD && game.hostId !== currentUser.id) {
-        addNotification({
-          toUserId: game.hostId,
-          message: `${currentUser.name} (PWD player) joined your game "${game.title}"`,
-          type: 'pwd_joined',
-          timestamp: new Date().toISOString(),
-          read: false,
-        });
-      }
       
       toast.success('Joined game successfully!');
       // Navigate to QUEUE screen (same as clicking Queue button)
@@ -382,6 +386,7 @@ export function AppContent() {
     'queue',
     'events',
     'teams',
+    'socials',
     'profile',
     'history',
     'creator-game-view',
@@ -549,6 +554,8 @@ export function AppContent() {
             setSelectedTeamId(teamId);
             setCurrentScreen('team-detail');
           }}
+          joinedGameData={joinedGameData} 
+          createdGameData={createdGameData}
         />
       )}
 
@@ -578,6 +585,15 @@ export function AppContent() {
           tournamentId={selectedTournamentId}
           onBack={() => setCurrentScreen('tournaments')}
           currentUserId={currentUser?.id}
+        />
+      )}
+
+      {currentScreen === 'socials' && (
+        <SocialsScreen 
+          onBack={() => {
+            setCurrentScreen('home');
+            setActiveTab('home');
+          }}
         />
       )}
 

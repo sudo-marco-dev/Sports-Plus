@@ -1,264 +1,340 @@
-import { useState } from 'react';
-import { Trophy, Star, Target, MapPin, Crown, Medal, TrendingUp, Award } from 'lucide-react';
-import { Badge } from './ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Avatar } from './ui/avatar';
-import { ScrollArea } from './ui/scroll-area';
-import { MiniProfileCard } from './MiniProfileCard';
+import { useState, useMemo } from 'react';
+import { Trophy, Crown, Medal, Award, CheckCircle2 } from 'lucide-react';
+
+interface Player {
+  id: string;
+  name: string;
+  initials: string;
+  sport: string;
+  mvps: number;
+  wins: number;
+  points: number;
+  barangay: string;
+  isVerified: boolean;
+  rank: number;
+  isCurrentUser: boolean;
+}
+
+interface Team {
+  id: string;
+  name: string;
+  sport: string;
+  wins: number;
+  mvps: number;
+  totalPoints: number;
+  captainName: string;
+}
 
 interface LeaderboardScreenProps {
   onBack?: () => void;
 }
 
-interface Player {
-  id: string;
-  name: string;
-  username: string;
-  userId: string;
-  avatar: string;
-  score: number;
-  gamesPlayed: number;
-  rating: number;
-  barangay: string;
-  isVerified: boolean;
-  rank: number;
-  change: number;
-  reliabilityScore?: number;
-  achievements?: string[];
-}
+// Mock data
+const allPlayers: Player[] = [
+  { id: 'p1', name: 'Marco Reyes', initials: 'MR', sport: 'Basketball', mvps: 12, wins: 28, points: 1240, barangay: 'Brgy. San Pedro', isVerified: true, rank: 1, isCurrentUser: true },
+  { id: 'p2', name: 'Carlos Reyes', initials: 'CR', sport: 'Basketball', mvps: 11, wins: 25, points: 1180, barangay: 'Brgy. Bancao-Bancao', isVerified: true, rank: 2, isCurrentUser: false },
+  { id: 'p3', name: 'Anika Santos', initials: 'AS', sport: 'Badminton', mvps: 9, wins: 22, points: 980, barangay: 'Brgy. Mandaragat', isVerified: true, rank: 3, isCurrentUser: false },
+  { id: 'p4', name: 'Diego Lim', initials: 'DL', sport: 'Football', mvps: 8, wins: 20, points: 870, barangay: 'Brgy. Bagong Sikat', isVerified: true, rank: 4, isCurrentUser: false },
+  { id: 'p5', name: 'Maria Santos', initials: 'MS', sport: 'Badminton', mvps: 7, wins: 18, points: 820, barangay: 'Brgy. San Jose', isVerified: true, rank: 5, isCurrentUser: false },
+  { id: 'p6', name: 'James Lim', initials: 'JL', sport: 'Basketball', mvps: 6, wins: 15, points: 710, barangay: 'Brgy. San Pedro', isVerified: true, rank: 6, isCurrentUser: false },
+  { id: 'p7', name: 'Carla Dizon', initials: 'CD', sport: 'Volleyball', mvps: 5, wins: 14, points: 520, barangay: 'Brgy. Bancao-Bancao', isVerified: false, rank: 7, isCurrentUser: false },
+];
 
-interface BarangayRanking {
-  barangay: string;
-  totalPoints: number;
-  players: number;
-  rank: number;
-}
+const allTeams: Team[] = [
+  { id: 't1', name: 'Ballers PH', sport: 'Basketball', wins: 28, mvps: 15, totalPoints: 1010, captainName: 'Marco Reyes' },
+  { id: 't2', name: 'FC Pasig', sport: 'Football', wins: 22, mvps: 10, totalPoints: 1320, captainName: 'Diego Lim' },
+  { id: 't3', name: 'Smash Sisters', sport: 'Badminton', wins: 20, mvps: 12, totalPoints: 650, captainName: 'Anika Santos' },
+  { id: 't4', name: 'Spike Force', sport: 'Volleyball', wins: 14, mvps: 6, totalPoints: 430, captainName: 'Carla Dizon' },
+];
+
+const sportEmojis: Record<string, string> = {
+  Basketball: '🏀',
+  Football: '⚽',
+  Badminton: '🏸',
+  Volleyball: '🏐',
+  Tennis: '🎾',
+  Swimming: '🏊',
+  Running: '🏃',
+  Cycling: '🚴',
+};
+
+const sportFilters = ['All', 'Basketball', 'Badminton', 'Football', 'Volleyball', 'Running', 'Cycling'];
 
 export function LeaderboardScreen({ onBack }: LeaderboardScreenProps) {
-  const [selectedPeriod, setSelectedPeriod] = useState<'monthly' | 'all-time'>('monthly');
-  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
-  const [sortBy, setSortBy] = useState<'rating' | 'distance' | 'date'>('rating');
+  const [activePeriod, setActivePeriod] = useState<'alltime' | 'monthly' | 'teams'>('alltime');
+  const [activeSport, setActiveSport] = useState<string>('All');
+  const [activeCategory, setActiveCategory] = useState<'mvps' | 'wins'>('mvps');
 
-  // Mock data
-  const topRatedPlayers: Player[] = [
-    { id: '1', name: 'Carlos Reyes', username: 'carlos_rey', userId: 'SP2025-1001', avatar: '', score: 4.9, gamesPlayed: 32, rating: 4.9, barangay: 'Brgy. San Pedro', isVerified: true, rank: 1, change: 0, reliabilityScore: 98, achievements: ['MVP', 'Perfect Attendance', '50 Games'], pwdStatus: 'Wheelchair user' },
-    { id: '2', name: 'Maria Santos', username: 'maria_s', userId: 'SP2025-1002', avatar: '', score: 4.8, gamesPlayed: 28, rating: 4.8, barangay: 'Brgy. Bancao-Bancao', isVerified: true, rank: 2, change: 1, reliabilityScore: 95, achievements: ['Team Player', '25 Games'] },
-    { id: '3', name: 'Juan dela Cruz', username: 'juan_dc', userId: 'SP2025-1003', avatar: '', score: 4.7, gamesPlayed: 25, rating: 4.7, barangay: 'Brgy. Mandaragat', isVerified: true, rank: 3, change: -1, reliabilityScore: 92, achievements: ['First Game', '10 Games'], pwdStatus: 'Visually impaired' },
-    { id: '4', name: 'Ana Lopez', username: 'ana_lopez', userId: 'SP2025-1004', avatar: '', score: 4.6, gamesPlayed: 22, rating: 4.6, barangay: 'Brgy. Bagong Sikat', isVerified: true, rank: 4, change: 2, reliabilityScore: 90, achievements: ['Quick Starter'] },
-    { id: '5', name: 'Pedro Martinez', username: 'pedro_m', userId: 'SP2025-1005', avatar: '', score: 4.5, gamesPlayed: 20, rating: 4.5, barangay: 'Brgy. San Jose', isVerified: true, rank: 5, change: 0, reliabilityScore: 88, achievements: ['Rookie'], pwdStatus: 'Other', pwdOther: 'Speech impairment' },
-  ];
+  // Filter and sort players
+  const filteredPlayers = useMemo(() => {
+    let filtered = allPlayers;
+    if (activeSport !== 'All') {
+      filtered = filtered.filter(p => p.sport === activeSport);
+    }
+    
+    // Sort by selected category
+    return filtered.sort((a, b) => {
+      if (activeCategory === 'mvps') {
+        return b.mvps - a.mvps;
+      } else {
+        return b.wins - a.wins;
+      }
+    });
+  }, [activeSport, activeCategory]);
 
-  const mostVerifiedPlayers: Player[] = [
-    { id: '1', name: 'Carlos Reyes', username: 'carlos_rey', userId: 'SP2025-1001', avatar: '', score: 32, gamesPlayed: 32, rating: 4.9, barangay: 'Brgy. San Pedro', isVerified: true, rank: 1, change: 0, reliabilityScore: 98, achievements: ['Game Master'] },
-    { id: '2', name: 'Maria Santos', username: 'maria_s', userId: 'SP2025-1002', avatar: '', score: 28, gamesPlayed: 28, rating: 4.8, barangay: 'Brgy. Bancao-Bancao', isVerified: true, rank: 2, change: 0, reliabilityScore: 95, achievements: ['Consistent'] },
-    { id: '3', name: 'Juan dela Cruz', username: 'juan_dc', userId: 'SP2025-1003', avatar: '', score: 25, gamesPlayed: 25, rating: 4.7, barangay: 'Brgy. Mandaragat', isVerified: true, rank: 3, change: 1, reliabilityScore: 92, achievements: ['Active'] },
-    { id: '4', name: 'Ana Lopez', username: 'ana_lopez', userId: 'SP2025-1004', avatar: '', score: 22, gamesPlayed: 22, rating: 4.6, barangay: 'Brgy. Bagong Sikat', isVerified: true, rank: 4, change: -1, reliabilityScore: 90, achievements: ['Rising Star'] },
-    { id: '5', name: 'Pedro Martinez', username: 'pedro_m', userId: 'SP2025-1005', avatar: '', score: 20, gamesPlayed: 20, rating: 4.5, barangay: 'Brgy. San Jose', isVerified: true, rank: 5, change: 0, reliabilityScore: 88, achievements: ['Newcomer'] },
-  ];
+  // Filter and sort teams
+  const filteredTeams = useMemo(() => {
+    let filtered = allTeams;
+    if (activeSport !== 'All') {
+      filtered = filtered.filter(t => t.sport === activeSport);
+    }
+    return filtered.sort((a, b) => b.wins - a.wins);
+  }, [activeSport]);
 
-  const mvpRankings: Player[] = topRatedPlayers.slice(0, 3);
-
-  const barangayRankings: BarangayRanking[] = [
-    { barangay: 'Brgy. San Pedro', totalPoints: 15420, players: 48, rank: 1 },
-    { barangay: 'Brgy. Bancao-Bancao', totalPoints: 14250, players: 42, rank: 2 },
-    { barangay: 'Brgy. Mandaragat', totalPoints: 13890, players: 39, rank: 3 },
-    { barangay: 'Brgy. Bagong Sikat', totalPoints: 12340, players: 35, rank: 4 },
-    { barangay: 'Brgy. San Jose', totalPoints: 11580, players: 31, rank: 5 },
-  ];
-
-  const getRankIcon = (rank: number) => {
-    if (rank === 1) return <Crown className="size-5 text-yellow-500" />;
-    if (rank === 2) return <Medal className="size-5 text-gray-400" />;
-    if (rank === 3) return <Award className="size-5 text-orange-600" />;
-    return null;
-  };
+  const currentUser = allPlayers.find(p => p.isCurrentUser);
 
   const getRankBadge = (rank: number) => {
-    if (rank === 1) return 'bg-gradient-to-r from-yellow-400 to-yellow-600';
-    if (rank === 2) return 'bg-gradient-to-r from-gray-300 to-gray-500';
-    if (rank === 3) return 'bg-gradient-to-r from-orange-400 to-orange-600';
-    return 'bg-gray-200';
+    if (rank === 1) return { color: 'bg-yellow-400', text: 'text-yellow-900', icon: '👑' };
+    if (rank === 2) return { color: 'bg-gray-300', text: 'text-gray-900', icon: '🥈' };
+    if (rank === 3) return { color: 'bg-orange-400', text: 'text-orange-900', icon: '🥉' };
+    return { color: 'bg-gray-200', text: 'text-gray-700', icon: '#' };
   };
 
-  const PlayerCard = ({ player, scoreLabel }: { player: Player; scoreLabel: string }) => (
-    <button
-      onClick={() => setSelectedPlayer(player)}
-      className="w-full bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-lg transition-all hover:scale-[1.02]"
-    >
-      <div className="relative">
-        <div className={`absolute -top-2 -left-2 size-8 rounded-full ${getRankBadge(player.rank)} flex items-center justify-center shadow-lg z-10`}>
-          {player.rank <= 3 ? (
-            getRankIcon(player.rank)
-          ) : (
-            <span className="text-white text-sm">#{player.rank}</span>
-          )}
-        </div>
-        <Avatar className="size-16 border-2 border-white shadow">
-          <div className="size-full bg-gradient-to-br from-blue-400 to-green-400 flex items-center justify-center">
-            <span className="text-white">{player.name.charAt(0)}</span>
-          </div>
-        </Avatar>
-      </div>
-
-      <div className="flex-1 text-left">
-        <div className="flex items-center gap-2">
-          <span className="text-gray-900">{player.name}</span>
-          {player.isVerified && (
-            <Badge variant="secondary" className="bg-blue-100 text-blue-700 h-5 px-1.5">
-              <svg className="size-3" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </Badge>
-          )}
-          {player.change !== 0 && (
-            <span className={`flex items-center gap-0.5 ${player.change > 0 ? 'text-green-600' : 'text-red-600'}`}>
-              <TrendingUp className={`size-3 ${player.change < 0 ? 'rotate-180' : ''}`} />
-              <span className="text-xs">{Math.abs(player.change)}</span>
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2 mt-1">
-          <span className="text-xs text-gray-500">{player.barangay}</span>
-          <span className="text-xs text-gray-400">•</span>
-          <span className="text-xs text-gray-500">{player.gamesPlayed} games</span>
-        </div>
-      </div>
-
-      <div className="text-right">
-        <div className="flex items-center gap-1 text-yellow-600">
-          <Star className="size-4 fill-current" />
-          <span>{player.score.toFixed(1)}</span>
-        </div>
-        <span className="text-xs text-gray-500">{scoreLabel}</span>
-      </div>
-    </button>
-  );
-
-  const BarangayCard = ({ barangay }: { barangay: BarangayRanking }) => (
-    <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center gap-4">
-      <div className={`size-12 rounded-full ${getRankBadge(barangay.rank)} flex items-center justify-center shadow`}>
-        {barangay.rank <= 3 ? (
-          getRankIcon(barangay.rank)
-        ) : (
-          <span className="text-white">#{barangay.rank}</span>
-        )}
-      </div>
-
-      <div className="flex-1">
-        <span className="text-gray-900">{barangay.barangay}</span>
-        <div className="flex items-center gap-2 mt-1">
-          <span className="text-xs text-gray-500">{barangay.players} players</span>
-        </div>
-      </div>
-
-      <div className="text-right">
-        <div className="flex items-center gap-1 text-blue-600">
-          <Trophy className="size-4" />
-          <span>{barangay.totalPoints.toLocaleString()}</span>
-        </div>
-        <span className="text-xs text-gray-500">Total Points</span>
-      </div>
-    </div>
-  );
+  const players = activePeriod === 'teams' ? [] : filteredPlayers;
+  const teams = activePeriod === 'teams' ? filteredTeams : [];
+  const displayData = activePeriod === 'teams' ? teams : players;
 
   return (
-    <div className="h-screen w-full max-w-md mx-auto bg-gradient-to-br from-blue-50 via-white to-green-50 flex flex-col pb-20">
+    <div className="h-screen w-full max-w-md mx-auto bg-gradient-to-br from-blue-50 to-green-50 flex flex-col pb-20">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-green-500 px-6 pt-12 pb-6 shadow-lg">
-        <div className="flex items-center justify-center mb-4">
-          <Trophy className="size-8 text-yellow-300 mr-2" />
-          <h1 className="text-white text-center">Leaderboards</h1>
-        </div>
-        
-        {/* Period Toggle */}
-        <div className="flex gap-2 bg-white/20 backdrop-blur-sm rounded-full p-1">
-          <button
-            onClick={() => setSelectedPeriod('monthly')}
-            className={`flex-1 py-2 px-4 rounded-full transition-all text-center ${
-              selectedPeriod === 'monthly'
-                ? 'bg-white text-blue-600 shadow'
-                : 'text-white'
-            }`}
-          >
-            This Month
-          </button>
-          <button
-            onClick={() => setSelectedPeriod('all-time')}
-            className={`flex-1 py-2 px-4 rounded-full transition-all text-center ${
-              selectedPeriod === 'all-time'
-                ? 'bg-white text-blue-600 shadow'
-                : 'text-white'
-            }`}
-          >
-            All-Time
-          </button>
+      <div className="bg-gradient-to-r from-teal-600 to-blue-600 px-6 pt-10 pb-6 shadow-lg">
+        <div className="flex items-center justify-center mb-4 gap-2">
+          <Trophy className="size-7 text-yellow-300" />
+          <h1 className="text-white text-2xl font-bold">Rankings</h1>
         </div>
       </div>
 
-      {/* Tabs */}
-      <Tabs defaultValue="top-rated" className="flex-1 flex flex-col">
-        <TabsList className="w-full grid grid-cols-2 gap-1 bg-transparent p-4 pb-0">
-          <TabsTrigger value="top-rated" className="data-[state=active]:bg-white data-[state=active]:shadow flex-col gap-1 h-auto py-2 px-1">
-            <Star className="size-4" />
-            <span className="text-xs">Top Rated</span>
-          </TabsTrigger>
-          <TabsTrigger value="most-games" className="data-[state=active]:bg-white data-[state=active]:shadow flex-col gap-1 h-auto py-2 px-1">
-            <Target className="size-4" />
-            <span className="text-xs">Most Games</span>
-          </TabsTrigger>
-        </TabsList>
+      {/* Sport Filter Chips - Horizontal Scroll */}
+      <div className="px-4 py-3 overflow-x-auto">
+        <div className="flex gap-2 whitespace-nowrap">
+          {sportFilters.map(sport => (
+            <button
+              key={sport}
+              onClick={() => setActiveSport(sport)}
+              className={`px-4 py-2 rounded-full font-medium transition-all ${
+                activeSport === sport
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-400'
+              }`}
+            >
+              {sport === 'All' ? '🏆 All' : `${sportEmojis[sport] || ''} ${sport}`}
+            </button>
+          ))}
+        </div>
+      </div>
 
-        <ScrollArea className="flex-1">
-          <div className="p-4 space-y-4 pb-32">
-            <TabsContent value="top-rated" className="mt-0 space-y-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
-                <p className="text-sm text-blue-800 text-center">
-                  <Trophy className="size-4 inline mr-1" />
-                  Players ranked by average star rating (minimum 5 verified games)
-                </p>
-              </div>
-              {topRatedPlayers.map(player => (
-                <PlayerCard key={player.id} player={player} scoreLabel="Avg Rating" />
-              ))}
-            </TabsContent>
+      {/* Period Selector - 3 Large Pills */}
+      <div className="px-4 py-3 flex gap-2">
+        <button
+          onClick={() => setActivePeriod('alltime')}
+          className={`flex-1 py-3 rounded-full font-semibold transition-all ${
+            activePeriod === 'alltime'
+              ? 'bg-white text-blue-600 shadow-md'
+              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+          }`}
+        >
+          All Time
+        </button>
+        <button
+          onClick={() => setActivePeriod('monthly')}
+          className={`flex-1 py-3 rounded-full font-semibold transition-all ${
+            activePeriod === 'monthly'
+              ? 'bg-white text-blue-600 shadow-md'
+              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+          }`}
+        >
+          This Month
+        </button>
+        <button
+          onClick={() => setActivePeriod('teams')}
+          className={`flex-1 py-3 rounded-full font-semibold transition-all ${
+            activePeriod === 'teams'
+              ? 'bg-white text-blue-600 shadow-md'
+              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+          }`}
+        >
+          Teams
+        </button>
+      </div>
 
-            <TabsContent value="most-games" className="mt-0 space-y-4">
-              <div className="bg-green-50 border border-green-200 rounded-xl p-3">
-                <p className="text-sm text-green-800 text-center">
-                  <Target className="size-4 inline mr-1" />
-                  Players with the most verified matches
-                </p>
-              </div>
-              {mostVerifiedPlayers.map(player => (
-                <PlayerCard key={player.id} player={player} scoreLabel="Games Played" />
-              ))}
-            </TabsContent>
-          </div>
-        </ScrollArea>
-      </Tabs>
-
-      {/* Mini Profile Card */}
-      {selectedPlayer && (
-        <MiniProfileCard
-          user={{
-            name: selectedPlayer.name,
-            username: selectedPlayer.username,
-            userId: selectedPlayer.userId,
-            rating: selectedPlayer.rating,
-            isVerified: selectedPlayer.isVerified,
-            gamesPlayed: selectedPlayer.gamesPlayed,
-            reliabilityScore: selectedPlayer.reliabilityScore,
-            achievements: selectedPlayer.achievements,
-            pwdStatus: selectedPlayer.pwdStatus || '',
-            pwdOther: selectedPlayer.pwdOther || '',
-          }}
-          onClose={() => setSelectedPlayer(null)}
-          onViewFullProfile={() => {
-            setSelectedPlayer(null);
-            // Navigate to full profile
-          }}
-        />
+      {/* Category Toggle - Only for All Time and Monthly */}
+      {activePeriod !== 'teams' && (
+        <div className="px-4 py-2 flex gap-2">
+          <button
+            onClick={() => setActiveCategory('mvps')}
+            className={`flex-1 py-2 px-3 rounded-full text-sm font-semibold transition-all ${
+              activeCategory === 'mvps'
+                ? 'bg-purple-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            🏆 MVPs
+          </button>
+          <button
+            onClick={() => setActiveCategory('wins')}
+            className={`flex-1 py-2 px-3 rounded-full text-sm font-semibold transition-all ${
+              activeCategory === 'wins'
+                ? 'bg-purple-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            🎯 Wins
+          </button>
+        </div>
       )}
+
+      {/* Your Rank Banner */}
+      {currentUser && activePeriod !== 'teams' && (
+        <div className="mx-4 my-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl p-4 shadow-md">
+          <p className="text-center font-semibold text-sm">
+            Your Rank: <span className="text-lg font-bold">#{currentUser.rank}</span> · {currentUser.mvps} MVPs · {currentUser.wins} Wins · {currentUser.points} pts
+          </p>
+        </div>
+      )}
+
+      {/* Ranking List */}
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+        {/* Player Rankings */}
+        {activePeriod !== 'teams' && (
+          <>
+            {/* Top 3 - Podium Cards */}
+            {filteredPlayers.slice(0, 3).map((player, idx) => {
+              const badge = getRankBadge(player.rank);
+              const stat = activeCategory === 'mvps' ? player.mvps : player.wins;
+              const statLabel = activeCategory === 'mvps' ? 'MVPs' : 'Wins';
+              const isCurrentUser = player.isCurrentUser;
+
+              return (
+                <div
+                  key={player.id}
+                  className={`bg-white rounded-2xl p-4 shadow-md border-2 transition-all ${
+                    isCurrentUser ? 'border-blue-400 bg-blue-50' : 'border-gray-100'
+                  }`}
+                >
+                  {/* Rank and Avatar */}
+                  <div className="flex items-start gap-4 mb-3">
+                    <div className={`${badge.color} ${badge.text} w-16 h-16 rounded-xl flex flex-col items-center justify-center shadow-md font-bold text-2xl flex-shrink-0`}>
+                      {badge.icon === '#' ? `#${player.rank}` : badge.icon}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-bold text-gray-900 text-lg">{player.name}</h3>
+                        {player.isVerified && <CheckCircle2 className="size-4 text-blue-600" />}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-semibold">
+                          {sportEmojis[player.sport] || ''} {player.sport}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-600 mt-1">{player.barangay}</p>
+                    </div>
+                  </div>
+
+                  {/* Stats */}
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-2 text-center">
+                      <p className="text-2xl font-bold text-purple-600">{stat}</p>
+                      <p className="text-xs text-purple-700 font-semibold">{statLabel}</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg p-2 text-center">
+                      <p className="text-2xl font-bold text-yellow-600">{player.mvps}</p>
+                      <p className="text-xs text-yellow-700 font-semibold">MVPs</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-2 text-center">
+                      <p className="text-2xl font-bold text-green-600">{player.points}</p>
+                      <p className="text-xs text-green-700 font-semibold">Pts</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Ranks 4+ - Compact Rows */}
+            {filteredPlayers.slice(3).map((player) => {
+              const stat = activeCategory === 'mvps' ? player.mvps : player.wins;
+              const isCurrentUser = player.isCurrentUser;
+
+              return (
+                <div
+                  key={player.id}
+                  className={`bg-white rounded-xl p-3 flex items-center gap-3 border transition-all ${
+                    isCurrentUser ? 'border-2 border-blue-400 bg-blue-50' : 'border border-gray-100'
+                  }`}
+                >
+                  <div className="w-10 h-10 rounded-lg bg-gray-200 flex items-center justify-center font-bold text-gray-700 flex-shrink-0">
+                    #{player.rank}
+                  </div>
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-400 to-purple-400 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                    {player.initials}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-gray-900 truncate">{player.name}</p>
+                      {player.isVerified && <CheckCircle2 className="size-3 text-blue-600 flex-shrink-0" />}
+                    </div>
+                    <p className="text-xs text-gray-600">{player.barangay}</p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full font-semibold">
+                      {sportEmojis[player.sport] || ''} {player.sport}
+                    </span>
+                    <span className="font-bold text-gray-900 text-right min-w-8">{stat}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </>
+        )}
+
+        {/* Team Rankings */}
+        {activePeriod === 'teams' && (
+          <>
+            {filteredTeams.map((team, idx) => {
+              const badge = getRankBadge(idx + 1);
+              return (
+                <div
+                  key={team.id}
+                  className="bg-white rounded-xl p-4 border border-gray-100 flex items-center gap-4"
+                >
+                  <div className={`${badge.color} ${badge.text} w-12 h-12 rounded-lg flex items-center justify-center shadow font-bold text-lg flex-shrink-0`}>
+                    {badge.icon === '#' ? `#${idx + 1}` : badge.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-gray-900">{team.name}</h3>
+                    <p className="text-xs text-gray-600">Captain: {team.captainName}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-semibold">
+                        {sportEmojis[team.sport] || ''} {team.sport}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <p className="font-bold text-gray-900">{team.wins}</p>
+                    <p className="text-xs text-gray-600">Wins</p>
+                  </div>
+                </div>
+              );
+            })}
+          </>
+        )}
+
+        {displayData.length === 0 && (
+          <div className="text-center py-12">
+            <Trophy className="size-12 text-gray-300 mx-auto mb-3" />
+            <p className="text-gray-500 text-sm">No rankings found for selected filter</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

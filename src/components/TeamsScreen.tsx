@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Users, Plus, Trophy, UserPlus, Settings, LogOut, Edit, Star, Target, Award, TrendingUp, Zap, Lock, Crown, MessageCircle, Image as ImageIcon, ChevronRight, Gift } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Users, Plus, Trophy, UserPlus, Settings, LogOut, Edit, Star, Target, Award, TrendingUp, Zap, Lock, Crown, MessageCircle, Image as ImageIcon, ChevronRight, Gift, Send, Camera } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
@@ -14,6 +14,7 @@ import { Progress } from './ui/progress';
 import { NotificationSystem } from './NotificationSystem';
 import { ScrollArea } from './ui/scroll-area';
 import { MiniProfileCard } from './MiniProfileCard';
+import { mockUsers } from '../data/mockData';
 
 const mockTeamMembers = [
   { id: '1', name: 'John Doe', role: 'Admin', verified: true, gamesPlayed: 45, rating: 4.8 },
@@ -164,6 +165,15 @@ export function TeamsScreen() {
   const [selectedTab, setSelectedTab] = useState('overview');
   const [communityFeed, setCommunityFeed] = useState(initialCommunityFeed);
   const [selectedMember, setSelectedMember] = useState<any>(null);
+  const [teamMessages, setTeamMessages] = useState<any[]>([
+    { id:'m1', senderId:'u1', senderName:'Marco Reyes', senderInitials:'MR', text:'Hey team! Anyone free this Saturday?', timestamp:'10:23 AM', type:'text' },
+    { id:'m2', senderId:'u6', senderName:'Rico Tan', senderInitials:'RT', text:'I am! What sport?', timestamp:'10:25 AM', type:'text' },
+    { id:'m3', senderId:'u1', senderName:'Marco Reyes', senderInitials:'MR', text:'Basketball at Taguig Sports Complex 3PM', timestamp:'10:26 AM', type:'text' },
+    { id:'m4', senderId:'system', senderName:'Sports Plus', senderInitials:'SP', text:'Marco Reyes invited the team to join "Taguig 3v3 Hoops" — Saturday 3PM at Taguig Sports Complex', timestamp:'10:27 AM', type:'game_invite', gameId:'g1', gameName:'Taguig 3v3 Hoops', gameVenue:'Taguig Sports Complex', gameTime:'Saturday 3:00 PM', sport:'Basketball' },
+  ]);
+  const [newTeamMessage, setNewTeamMessage] = useState('');
+  const [showTeamChatMenu, setShowTeamChatMenu] = useState(false);
+  const chatMenuRef = useRef<HTMLDivElement>(null);
   const createTeamCost = 500;
 
   const handleLikePost = (postId: string) => {
@@ -305,6 +315,22 @@ export function TeamsScreen() {
                 <p className="text-white/70 text-xs mt-0.5">Rating</p>
               </div>
             </div>
+
+            {/* Coach Section */}
+            {currentTeam && (() => {
+              const teamCoach = mockUsers.find(u => u.id === 'u3');
+              if (!teamCoach) return null;
+              return (
+                <div className="mt-4 bg-white/15 backdrop-blur-sm rounded-2xl p-3 border border-white/20 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-teal-500 flex items-center justify-center text-white font-semibold text-sm">JL</div>
+                  <div>
+                    <p className="text-white text-sm font-semibold">James Lim</p>
+                    <p className="text-white/70 text-xs">Basketball Coach</p>
+                  </div>
+                  <span className="ml-auto bg-teal-400/30 text-teal-100 text-xs px-2 py-1 rounded-full">Coach</span>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Team Challenges Section */}
@@ -539,16 +565,170 @@ export function TeamsScreen() {
               </TabsContent>
 
               <TabsContent value="chat" className="mt-4 pb-24">
-                <div className="bg-white rounded-2xl shadow-lg p-6 text-center">
-                  <MessageCircle className="size-12 text-gray-400 mx-auto mb-3" />
-                  <h3 className="text-gray-900 font-semibold mb-2">Team Chat</h3>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Connect with your teammates, plan matches, and share updates.
-                  </p>
-                  <Button className="bg-gradient-to-r from-blue-600 to-green-600 rounded-xl">
-                    <MessageCircle className="size-4 mr-2" />
-                    Open Chat
-                  </Button>
+                <div className="bg-white rounded-2xl shadow-lg flex flex-col h-[600px] overflow-hidden">
+                  {/* Chat Messages */}
+                  <ScrollArea className="flex-1 p-4">
+                    <div className="space-y-4 pr-4">
+                      {teamMessages.map((msg) => {
+                        const isOwnMessage = msg.senderId === 'u1';
+                        
+                        if (msg.type === 'game_invite') {
+                          return (
+                            <div key={msg.id} className="flex justify-center">
+                              <div className="bg-gradient-to-br from-purple-100 to-blue-100 rounded-2xl p-4 max-w-xs border-2 border-purple-200 shadow-md">
+                                <p className="text-xs text-gray-600 mb-2 font-medium">Game Invite</p>
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Badge className="bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs">
+                                    {msg.sport}
+                                  </Badge>
+                                </div>
+                                <h4 className="font-bold text-gray-900 text-sm mb-1">{msg.gameName}</h4>
+                                <p className="text-xs text-gray-600 mb-1"><span className="font-semibold">📍</span> {msg.gameVenue}</p>
+                                <p className="text-xs text-gray-600 mb-3"><span className="font-semibold">🕐</span> {msg.gameTime}</p>
+                                <Button 
+                                  onClick={() => toast.success('Joined game!')}
+                                  className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white text-xs py-2 rounded-lg font-semibold"
+                                >
+                                  Join Game
+                                </Button>
+                                <p className="text-xs text-gray-500 mt-2 text-center">{msg.timestamp}</p>
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        if (msg.type === 'photo') {
+                          return (
+                            <div key={msg.id} className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                              <div className={`flex gap-2 ${isOwnMessage ? '' : 'flex-row'} max-w-xs`}>
+                                {!isOwnMessage && (
+                                  <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center text-sm font-bold text-purple-700 flex-shrink-0">
+                                    {msg.senderInitials}
+                                  </div>
+                                )}
+                                <div>
+                                  {!isOwnMessage && <p className="text-xs font-semibold text-gray-900 mb-1">{msg.senderName}</p>}
+                                  <div className={`w-40 h-40 rounded-xl bg-gray-200 flex items-center justify-center border-2 ${isOwnMessage ? 'border-blue-300' : 'border-gray-300'}`}>
+                                    <Camera className="text-gray-400" size={32} />
+                                  </div>
+                                  <p className="text-xs text-gray-500 mt-1">{msg.timestamp}</p>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div key={msg.id} className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                            <div className={`flex gap-2 ${isOwnMessage ? 'flex-row-reverse' : ''} max-w-xs`}>
+                              {!isOwnMessage && (
+                                <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center text-sm font-bold text-purple-700 flex-shrink-0">
+                                  {msg.senderInitials}
+                                </div>
+                              )}
+                              <div className={isOwnMessage ? 'text-right' : ''}>
+                                {!isOwnMessage && <p className="text-xs font-semibold text-gray-900 mb-1">{msg.senderName}</p>}
+                                <div className={`rounded-2xl px-4 py-2 ${isOwnMessage ? 'bg-blue-500 text-white rounded-br-none' : 'bg-gray-100 text-gray-900 rounded-bl-none'}`}>
+                                  <p className="text-sm">{msg.text}</p>
+                                </div>
+                                <p className={`text-xs ${isOwnMessage ? 'text-gray-500 text-right' : 'text-gray-500'} mt-1`}>
+                                  {msg.timestamp}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </ScrollArea>
+
+                  {/* Chat Input */}
+                  <div className="border-t border-gray-200 p-3 bg-white">
+                    <div className="flex gap-2 items-end relative">
+                      <Input
+                        value={newTeamMessage}
+                        onChange={(e) => setNewTeamMessage(e.target.value)}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter' && newTeamMessage.trim()) {
+                            const msg = {
+                              id: `m${Date.now()}`,
+                              senderId: 'u1',
+                              senderName: 'Marco Reyes',
+                              senderInitials: 'MR',
+                              text: newTeamMessage,
+                              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                              type: 'text'
+                            };
+                            setTeamMessages([...teamMessages, msg]);
+                            setNewTeamMessage('');
+                          }
+                        }}
+                        placeholder="Type a message..."
+                        className="flex-1 rounded-2xl py-2 px-4 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <button
+                        onClick={() => setShowTeamChatMenu(!showTeamChatMenu)}
+                        className="p-2 rounded-lg hover:bg-gray-100 text-gray-600"
+                      >
+                        <Plus size={20} />
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (newTeamMessage.trim()) {
+                            const msg = {
+                              id: `m${Date.now()}`,
+                              senderId: 'u1',
+                              senderName: 'Marco Reyes',
+                              senderInitials: 'MR',
+                              text: newTeamMessage,
+                              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                              type: 'text'
+                            };
+                            setTeamMessages([...teamMessages, msg]);
+                            setNewTeamMessage('');
+                          }
+                        }}
+                        className="p-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white"
+                      >
+                        <Send size={20} />
+                      </button>
+                      
+                      {/* Menu */}
+                      {showTeamChatMenu && (
+                        <div ref={chatMenuRef} className="absolute bottom-12 right-0 bg-white border border-gray-300 rounded-lg shadow-lg z-10 w-48">
+                          <button
+                            onClick={() => {
+                              toast.info('Join or create a game first to invite your team.');
+                              setShowTeamChatMenu(false);
+                            }}
+                            className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-700 border-b border-gray-200 flex items-center gap-2"
+                          >
+                            <Trophy size={16} />
+                            Invite to my game
+                          </button>
+                          <button
+                            onClick={() => {
+                              const photoMsg = {
+                                id: `m${Date.now()}`,
+                                senderId: 'u1',
+                                senderName: 'Marco Reyes',
+                                senderInitials: 'MR',
+                                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                                type: 'photo'
+                              };
+                              setTeamMessages([...teamMessages, photoMsg]);
+                              setShowTeamChatMenu(false);
+                              toast.success('Photo added to chat');
+                            }}
+                            className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-700 flex items-center gap-2"
+                          >
+                            <Camera size={16} />
+                            Share a photo
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </TabsContent>
 

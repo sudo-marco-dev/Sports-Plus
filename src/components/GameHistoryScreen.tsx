@@ -1,6 +1,9 @@
-import { Calendar, MapPin, Users, CheckCircle2, Clock, ArrowLeft } from 'lucide-react';
+import { useState } from 'react';
+import { Calendar, MapPin, Users, CheckCircle2, Clock, ArrowLeft, Share2 } from 'lucide-react';
 import { Badge } from './ui/badge';
+import { Button } from './ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { ShareGameModal } from './ShareGameModal';
 
 const mockHistory = [
   {
@@ -43,6 +46,18 @@ interface GameHistoryScreenProps {
 }
 
 export function GameHistoryScreen({ onBack }: GameHistoryScreenProps) {
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [selectedGameForShare, setSelectedGameForShare] = useState<any>(null);
+
+  const openShareModal = (game: any) => {
+    setSelectedGameForShare(game);
+    setShowShareModal(true);
+  };
+
+  const handleShare = (shareData: any) => {
+    // Handle share - this will add to feed in SocialsScreen
+  };
+
   return (
     <div className="h-screen w-full max-w-md mx-auto bg-gray-50 flex flex-col pb-20">
       <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-green-600 pt-8 pb-12 px-6">
@@ -112,9 +127,20 @@ export function GameHistoryScreen({ onBack }: GameHistoryScreenProps) {
                 </div>
 
                 {game.status === 'Completed' && (
-                  <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
-                    <CheckCircle2 className="w-4 h-4 text-green-600" />
-                    <span className="text-sm text-green-600">Attended (+1 Reliability)</span>
+                  <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-green-600" />
+                      <span className="text-sm text-green-600">Attended (+1 Reliability)</span>
+                    </div>
+                    <Button
+                      onClick={() => openShareModal(game)}
+                      variant="outline"
+                      size="sm"
+                      className="text-blue-600 border-blue-200 hover:bg-blue-50 h-8 px-3 text-xs rounded-lg gap-1"
+                    >
+                      <Share2 className="w-3 h-3" />
+                      Share
+                    </Button>
                   </div>
                 )}
               </div>
@@ -150,6 +176,20 @@ export function GameHistoryScreen({ onBack }: GameHistoryScreenProps) {
                     <span>{game.participants} players</span>
                   </div>
                 </div>
+
+                {game.status === 'Completed' && (
+                  <div className="flex justify-end pt-2 border-t border-gray-100">
+                    <Button
+                      onClick={() => openShareModal(game)}
+                      variant="outline"
+                      size="sm"
+                      className="text-blue-600 border-blue-200 hover:bg-blue-50 h-8 px-3 text-xs rounded-lg gap-1"
+                    >
+                      <Share2 className="w-3 h-3" />
+                      Share
+                    </Button>
+                  </div>
+                )}
               </div>
             ))}
           </TabsContent>
@@ -183,11 +223,35 @@ export function GameHistoryScreen({ onBack }: GameHistoryScreenProps) {
                     <span className="truncate">{game.location}</span>
                   </div>
                 </div>
+
+                {game.status === 'Completed' && (
+                  <div className="flex justify-end pt-2 border-t border-gray-100">
+                    <Button
+                      onClick={() => openShareModal(game)}
+                      variant="outline"
+                      size="sm"
+                      className="text-blue-600 border-blue-200 hover:bg-blue-50 h-8 px-3 text-xs rounded-lg gap-1"
+                    >
+                      <Share2 className="w-3 h-3" />
+                      Share
+                    </Button>
+                  </div>
+                )}
               </div>
             ))}
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <ShareGameModal
+          isOpen={showShareModal}
+          onClose={() => setShowShareModal(false)}
+          onShare={handleShare}
+          gameData={selectedGameForShare}
+        />
+      )}
     </div>
   );
 }

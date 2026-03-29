@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, MapPin, Clock, Users, CheckCircle2, Play, X, Trophy, Star, Flag, AlertCircle, Map, UserMinus, UserPlus, Send, MessageCircle, Gift } from 'lucide-react';
+import { ArrowLeft, MapPin, Clock, Users, CheckCircle2, Play, X, Trophy, Star, Flag, AlertCircle, Map, UserMinus, UserPlus, Send, MessageCircle, Gift, Share2, Crown } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { ScrollArea } from './ui/scroll-area';
@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback } from './ui/avatar';
 import { Input } from './ui/input';
 import { toast } from 'sonner';
 import { MiniProfileCard } from './MiniProfileCard';
+import { ShareGameModal } from './ShareGameModal';
 import { useAuth } from '../context/AuthContext';
 import { CertificateView } from './CertificateView';
 import { Certificate } from '../data/mockData';
@@ -58,7 +59,7 @@ interface ChatMessage {
   timestamp: number;
 }
 
-type GameState = 'waiting' | 'active' | 'finished' | 'host-score-entry' | 'vote-score' | 'rescore' | 'revote-score' | 'rating' | 'rewards' | 'completed';
+type GameState = 'waiting' | 'active' | 'finished' | 'host-score-entry' | 'vote-score' | 'rescore' | 'revote-score' | 'mvp-vote' | 'rating' | 'rewards' | 'completed';
 
 const skillLevels: ('Casual' | 'Novice' | 'Elite')[] = ['Casual', 'Novice', 'Elite'];
 
@@ -115,6 +116,11 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
   const [showRewardScreen, setShowRewardScreen] = useState(false);
   const [showCertificateView, setShowCertificateView] = useState(false);
   const [currentCertificate, setCurrentCertificate] = useState<Certificate | null>(null);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [mvpVotes, setMvpVotes] = useState<{[playerId: string]: number}>({});
+  const [hasVotedMvp, setHasVotedMvp] = useState(false);
+  const [mvpWinner, setMvpWinner] = useState<Player | null>(null);
+  const [showMvpReveal, setShowMvpReveal] = useState(false);
 
   useEffect(() => {
     if (gameData) {
@@ -310,10 +316,10 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
       if (approveCount >= players.length) {
         clearInterval(voteInterval);
         setTimeout(() => {
-          setGameState('rating');
+          setGameState('mvp-vote');
           setVotesApproved(0);
           setVotesDisapproved(0);
-          toast.success('Score approved! Rate the players...');
+          toast.success('Score approved! Vote for the MVP...');
         }, 1000);
       }
     }, 400);
@@ -413,15 +419,32 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
       if (approveCount >= Math.ceil(players.length * 0.7)) {
         clearInterval(voteInterval);
         setTimeout(() => {
-          setGameState('rating');
+          setGameState('mvp-vote');
           setVotesApproved(0);
           setVotesDisapproved(0);
           setHasUserVoted(false);
           setUserVote(null);
-          toast.success('Score approved! Moving to rating...');
+          toast.success('Score approved! Vote for the MVP...');
         }, 1000);
       }
     }, 400);
+  };
+
+  const handleVoteMvp = (player: Player) => {
+    setHasVotedMvp(true);
+    setMvpVotes(prev => ({ ...prev, [player.id]: (prev[player.id] || 0) + 1 }));
+    toast.success('MVP vote cast!');
+    
+    // Simulate other players voting after 2 seconds
+    setTimeout(() => {
+      const simulatedVotes: {[playerId: string]: number} = {};
+      players.forEach(p => {
+        // Give current user (id: 'current-user') the most votes regardless of who was tapped
+        simulatedVotes[p.id] = p.isCurrentUser ? players.length - 1 : Math.floor(Math.random() * 2);
+      });
+      setMvpVotes(simulatedVotes);
+      setShowMvpReveal(true);
+    }, 2000);
   };
 
   const handleRatePlayer = () => {
@@ -653,6 +676,13 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
                   📜 View Certificate
                 </Button>
                 <Button
+                  onClick={() => setShowShareModal(true)}
+                  className="w-full rounded-2xl py-3 font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 flex items-center justify-center gap-2"
+                >
+                  <Share2 size={18} />
+                  Share after game
+                </Button>
+                <Button
                   onClick={handleReturnToMenu}
                   className="w-full rounded-2xl py-3 font-semibold text-white bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
                 >
@@ -838,6 +868,38 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
       </div>
     );
   }
+
+  // MVP VOTING STATE
+  if (gameState === 'mvp-vote') {
+    if (!showMvpReveal) {
+      // STEP 1: Player voting
+      return (
+        <div className="h-screen w-full max-w-md mx-auto bg-gray-50 flex flex-col">
+          <div className="bg-gradient-to-br from-yellow-400 via-yellow-500 to-orange-500 pt-8 pb-8 px-6 rounded-b-3xl">
+            <h1 className="text-white text-2xl font-bold">Vote for MVP</h1>
+            <p className="text-white/90 text-sm">Who was the best player this game?</p>
+          </div>
+
+          <ScrollArea className="flex-1 px-6 py-8">
+            <div className="space-y-3 pb-32">
+              {players.map((player) => (
+                <button
+                  key={player.id}
+                  onClick={() => handleVoteMvp(player)}
+                  disabled={hasVotedMvp}
+                  className={`w-full bg-white rounded-2xl shadow-lg p-4 flex items-center gap-4 transition-all hover:shadow-xl ${
+                    hasVotedMvp ? 'opacity-60' : 'hover:scale-105'
+                  } ${!hasVotedMvp ? 'cursor-pointer' : ''}`}
+                >
+                  <Avatar className="size-12">
+                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-green-500 text-white font-bold text-lg">
+                      {player.name.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 text-left">
+                    <h3 className="text-gray-900 font-semibold text-lg">{player.name}</h3>
+                  </div>
+                  <Badge className={`${getSkillBadgeColor(player.skillLevel)} text-xs font-semibold px-3 py-1`}>\n                    {player.skillLevel}\n                  </Badge>\n                </button>\n              ))}\n            </div>\n          </ScrollArea>\n        </div>\n      );\n    } else {\n      // STEP 2: MVP Reveal\n      const currentUser = players.find(p => p.isCurrentUser);\n      const mvpVotesCopy = Object.entries(mvpVotes).sort(([, a], [, b]) => b - a);\n      \n      return (\n        <div className=\"h-screen w-full max-w-md mx-auto bg-gradient-to-br from-yellow-50 to-orange-50 flex flex-col\">\n          <div className=\"bg-gradient-to-br from-yellow-400 via-yellow-500 to-orange-500 pt-8 pb-8 px-6 rounded-b-3xl\">\n            <h1 className=\"text-white text-2xl font-bold text-center\">🏆 MVP Reveal</h1>\n          </div>\n\n          <ScrollArea className=\"flex-1 px-6 py-8\">\n            <div className=\"pb-32\">\n              {/* Animated MVP Reveal */}\n              <div className=\"text-center bg-white rounded-3xl shadow-2xl p-8 mb-6\">\n                <div className=\"animate-bounce mb-4 inline-block\">\n                  <Crown className=\"w-16 h-16 text-yellow-500\" fill=\"currentColor\" />\n                </div>\n                <h2 className=\"text-gray-900 font-bold text-3xl mb-2\">MVP of the Game!</h2>\n                <div className=\"bg-gradient-to-r from-yellow-100 to-orange-100 rounded-2xl p-4 mb-4\">\n                  <p className=\"text-gray-900 font-bold text-2xl\">YOU</p>\n                  <p className=\"text-gray-600 text-sm mt-1\">Voted by {players.length - 1} players</p>\n                </div>\n                <div className=\"bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-2xl p-3 inline-block font-bold text-lg mb-6\">\n                  +50 BONUS MVP POINTS\n                </div>\n                <p className=\"text-gray-600 text-sm mb-4\">You've been voted the MVP! Great game!</p>\n              </div>\n\n              {/* Vote Breakdown */}\n              <div className=\"bg-white rounded-2xl shadow-lg p-6 mb-6\">\n                <h3 className=\"text-gray-900 font-bold text-lg mb-4\">Vote Breakdown</h3>\n                <div className=\"space-y-3\">\n                  {mvpVotesCopy.map(([playerId, votes]) => {\n                    const votedPlayer = players.find(p => p.id === playerId);\n                    return (\n                      <div key={playerId} className=\"flex items-center justify-between\">\n                        <span className=\"text-gray-900 font-semibold\">{votedPlayer?.name}</span>\n                        <Badge className=\"bg-yellow-100 text-yellow-700 font-bold\">{votes} votes</Badge>\n                      </div>\n                    );\n                  })}\n                </div>\n              </div>\n            </div>\n          </ScrollArea>\n\n          {/* Action Button */}\n          <div className=\"px-6 py-4 bg-white border-t border-gray-200\">\n            <Button\n              onClick={() => {\n                addPoints(50);\n                setGameState('rating');\n                setCurrentRatingIndex(0);\n                setHasVotedMvp(false);\n                setShowMvpReveal(false);\n                setMvpVotes({});\n                toast.success('Moving to player ratings...');\n              }}\n              className=\"w-full rounded-2xl py-3 font-semibold text-white bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600\"\n            >\n              Continue to Ratings\n            </Button>\n          </div>\n        </div>\n      );\n    }\n  }
 
   if (gameState === 'rating') {
     const currentPlayer = players[currentRatingIndex];
@@ -1491,6 +1553,14 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
             setShowCertificateView(false);
             setCurrentCertificate(null);
           }}
+        />
+      )}
+
+      {/* Share Game Modal */}
+      {showShareModal && (
+        <ShareGameModal
+          gameData={gameData}
+          onClose={() => setShowShareModal(false)}
         />
       )}
     </div>
