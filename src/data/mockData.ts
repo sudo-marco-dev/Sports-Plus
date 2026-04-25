@@ -18,6 +18,7 @@ export interface User {
   name: string;
   initials: string;
   accountType: 'player' | 'coach' | 'organization';
+  role: 'player' | 'organization';
   isPWD: boolean;
   isMinor: boolean;
   totalPoints: number;
@@ -53,6 +54,23 @@ export interface Game {
   venue: Venue;
   status: 'open' | 'full' | 'completed' | 'cancelled';
   isPWDWelcome: boolean;
+}
+
+export interface Sponsor {
+  name: string;
+  logo: string;
+}
+
+export interface EventRequirements {
+  minAge: number;
+  minRank: number;
+}
+
+export interface OrganizationEvent extends Game {
+  sponsors: Sponsor[];
+  requirements: EventRequirements;
+  waiverText: string;
+  applicationStatus: 'pending' | 'approved' | 'rejected';
 }
 
 export interface TeamMember {
@@ -124,6 +142,7 @@ export const mockUsers: User[] = [
     name: 'Marco Reyes',
     initials: 'MR',
     accountType: 'player',
+    role: 'player',
     isPWD: false,
     isMinor: false,
     totalPoints: 1240,
@@ -139,6 +158,7 @@ export const mockUsers: User[] = [
     name: 'Anika Santos',
     initials: 'AS',
     accountType: 'player',
+    role: 'player',
     isPWD: true,
     isMinor: false,
     totalPoints: 980,
@@ -153,6 +173,7 @@ export const mockUsers: User[] = [
     name: 'James Lim',
     initials: 'JL',
     accountType: 'coach',
+    role: 'player',
     isPWD: false,
     isMinor: false,
     totalPoints: 0,
@@ -169,6 +190,7 @@ export const mockUsers: User[] = [
     name: 'Carla Dizon',
     initials: 'CD',
     accountType: 'player',
+    role: 'player',
     isPWD: false,
     isMinor: true,
     totalPoints: 520,
@@ -194,6 +216,7 @@ export const mockUsers: User[] = [
     name: 'Rico Tan',
     initials: 'RT',
     accountType: 'organization',
+    role: 'organization',
     isPWD: false,
     isMinor: false,
     totalPoints: 0,
@@ -208,6 +231,7 @@ export const mockUsers: User[] = [
     name: 'Juan dela Cruz',
     initials: 'JC',
     accountType: 'player',
+    role: 'player',
     isPWD: false,
     isMinor: false,
     totalPoints: 850,
@@ -222,6 +246,7 @@ export const mockUsers: User[] = [
     name: 'Maria Santos',
     initials: 'MS',
     accountType: 'player',
+    role: 'player',
     isPWD: false,
     isMinor: false,
     totalPoints: 650,
@@ -236,6 +261,7 @@ export const mockUsers: User[] = [
     name: 'Carlos Reyes',
     initials: 'CR',
     accountType: 'player',
+    role: 'player',
     isPWD: true,
     isMinor: false,
     totalPoints: 920,
@@ -248,6 +274,7 @@ export const mockUsers: User[] = [
     name: 'Sofia Fernandez',
     initials: 'SF',
     accountType: 'player',
+    role: 'player',
     isPWD: false,
     isMinor: false,
     totalPoints: 750,
@@ -262,6 +289,7 @@ export const mockUsers: User[] = [
     name: 'David Lopez',
     initials: 'DL',
     accountType: 'player',
+    role: 'player',
     isPWD: false,
     isMinor: true,
     totalPoints: 420,
@@ -648,7 +676,7 @@ export const mockNotifications: Notification[] = [
 // CURRENT LOGGED IN USER
 // ============================================================================
 
-export const mockCurrentUser: User = mockUsers[0]; // Marco Reyes (u1)
+export const mockCurrentUser: User = mockUsers[4]; // Rico Tan (u5) - Organization [TEMP: change back to mockUsers[0] after testing]
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -772,7 +800,9 @@ export function getMinorUsers(): User[] {
  * Get leaderboard sorted by points
  */
 export function getLeaderboard(): User[] {
-  return [...mockUsers].sort((a, b) => b.totalPoints - a.totalPoints);
+  return [...mockUsers]
+    .filter((u) => u.role !== 'organization')
+    .sort((a, b) => b.totalPoints - a.totalPoints);
 }
 
 /**

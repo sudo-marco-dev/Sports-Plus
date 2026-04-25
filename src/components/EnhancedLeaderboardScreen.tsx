@@ -1,5 +1,16 @@
 import { useState, useMemo } from 'react';
-import { Trophy, Crown, Medal, Award, CheckCircle2 } from 'lucide-react';
+import { Trophy, Crown, Medal, Award, CheckCircle2, Filter, BarChart3, Users as UsersIcon } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Badge } from './ui/badge';
+import { Label } from './ui/label';
 
 interface Player {
   id: string;
@@ -13,6 +24,7 @@ interface Player {
   isVerified: boolean;
   rank: number;
   isCurrentUser: boolean;
+  role: 'player' | 'organization';
 }
 
 interface Team {
@@ -31,13 +43,13 @@ interface LeaderboardScreenProps {
 
 // Mock data
 const allPlayers: Player[] = [
-  { id: 'p1', name: 'Marco Reyes', initials: 'MR', sport: 'Basketball', mvps: 12, wins: 28, points: 1240, barangay: 'Brgy. San Pedro', isVerified: true, rank: 1, isCurrentUser: true },
-  { id: 'p2', name: 'Carlos Reyes', initials: 'CR', sport: 'Basketball', mvps: 11, wins: 25, points: 1180, barangay: 'Brgy. Bancao-Bancao', isVerified: true, rank: 2, isCurrentUser: false },
-  { id: 'p3', name: 'Anika Santos', initials: 'AS', sport: 'Badminton', mvps: 9, wins: 22, points: 980, barangay: 'Brgy. Mandaragat', isVerified: true, rank: 3, isCurrentUser: false },
-  { id: 'p4', name: 'Diego Lim', initials: 'DL', sport: 'Football', mvps: 8, wins: 20, points: 870, barangay: 'Brgy. Bagong Sikat', isVerified: true, rank: 4, isCurrentUser: false },
-  { id: 'p5', name: 'Maria Santos', initials: 'MS', sport: 'Badminton', mvps: 7, wins: 18, points: 820, barangay: 'Brgy. San Jose', isVerified: true, rank: 5, isCurrentUser: false },
-  { id: 'p6', name: 'James Lim', initials: 'JL', sport: 'Basketball', mvps: 6, wins: 15, points: 710, barangay: 'Brgy. San Pedro', isVerified: true, rank: 6, isCurrentUser: false },
-  { id: 'p7', name: 'Carla Dizon', initials: 'CD', sport: 'Volleyball', mvps: 5, wins: 14, points: 520, barangay: 'Brgy. Bancao-Bancao', isVerified: false, rank: 7, isCurrentUser: false },
+  { id: 'p1', name: 'Marco Reyes', initials: 'MR', sport: 'Basketball', mvps: 12, wins: 28, points: 1240, barangay: 'Brgy. San Pedro', isVerified: true, rank: 1, isCurrentUser: true, role: 'player' },
+  { id: 'p2', name: 'Carlos Reyes', initials: 'CR', sport: 'Basketball', mvps: 11, wins: 25, points: 1180, barangay: 'Brgy. Bancao-Bancao', isVerified: true, rank: 2, isCurrentUser: false, role: 'player' },
+  { id: 'p3', name: 'Anika Santos', initials: 'AS', sport: 'Badminton', mvps: 9, wins: 22, points: 980, barangay: 'Brgy. Mandaragat', isVerified: true, rank: 3, isCurrentUser: false, role: 'player' },
+  { id: 'p4', name: 'Diego Lim', initials: 'DL', sport: 'Football', mvps: 8, wins: 20, points: 870, barangay: 'Brgy. Bagong Sikat', isVerified: true, rank: 4, isCurrentUser: false, role: 'player' },
+  { id: 'p5', name: 'Maria Santos', initials: 'MS', sport: 'Badminton', mvps: 7, wins: 18, points: 820, barangay: 'Brgy. San Jose', isVerified: true, rank: 5, isCurrentUser: false, role: 'player' },
+  { id: 'p6', name: 'James Lim', initials: 'JL', sport: 'Basketball', mvps: 6, wins: 15, points: 710, barangay: 'Brgy. San Pedro', isVerified: true, rank: 6, isCurrentUser: false, role: 'player' },
+  { id: 'p7', name: 'Carla Dizon', initials: 'CD', sport: 'Volleyball', mvps: 5, wins: 14, points: 520, barangay: 'Brgy. Bancao-Bancao', isVerified: false, rank: 7, isCurrentUser: false, role: 'player' },
 ];
 
 const allTeams: Team[] = [
@@ -61,13 +73,14 @@ const sportEmojis: Record<string, string> = {
 const sportFilters = ['All', 'Basketball', 'Badminton', 'Football', 'Volleyball', 'Running', 'Cycling'];
 
 export function LeaderboardScreen({ onBack }: LeaderboardScreenProps) {
-  const [activePeriod, setActivePeriod] = useState<'alltime' | 'monthly' | 'teams'>('alltime');
+  const [activeEntity, setActiveEntity] = useState<'players' | 'teams'>('players');
+  const [activePeriod, setActivePeriod] = useState<'alltime' | 'monthly'>('alltime');
   const [activeSport, setActiveSport] = useState<string>('All');
   const [activeCategory, setActiveCategory] = useState<'mvps' | 'wins'>('mvps');
 
   // Filter and sort players
   const filteredPlayers = useMemo(() => {
-    let filtered = allPlayers;
+    let filtered = allPlayers.filter(p => p.role !== 'organization');
     if (activeSport !== 'All') {
       filtered = filtered.filter(p => p.sport === activeSport);
     }
@@ -100,9 +113,25 @@ export function LeaderboardScreen({ onBack }: LeaderboardScreenProps) {
     return { color: 'bg-gray-200', text: 'text-gray-700', icon: '#' };
   };
 
-  const players = activePeriod === 'teams' ? [] : filteredPlayers;
-  const teams = activePeriod === 'teams' ? filteredTeams : [];
-  const displayData = activePeriod === 'teams' ? teams : players;
+  const players = activeEntity === 'teams' ? [] : filteredPlayers;
+  const teams = activeEntity === 'teams' ? filteredTeams : [];
+  const displayData = activeEntity === 'teams' ? teams : players;
+
+  const chartData = useMemo(() => {
+    if (activeEntity === 'players') {
+      return filteredPlayers.slice(0, 5).map(p => ({
+        name: p.name.split(' ')[0],
+        value: activeCategory === 'mvps' ? p.mvps : p.wins,
+        fullName: p.name,
+      }));
+    } else {
+      return filteredTeams.slice(0, 5).map(t => ({
+        name: t.name,
+        value: t.wins,
+        fullName: t.name,
+      }));
+    }
+  }, [activeEntity, filteredPlayers, filteredTeams, activeCategory]);
 
   return (
     <div className="h-screen w-full max-w-md mx-auto bg-gradient-to-br from-blue-50 to-green-50 flex flex-col pb-20">
@@ -114,61 +143,112 @@ export function LeaderboardScreen({ onBack }: LeaderboardScreenProps) {
         </div>
       </div>
 
-      {/* Sport Filter Chips - Horizontal Scroll */}
-      <div className="px-4 py-3 overflow-x-auto">
-        <div className="flex gap-2 whitespace-nowrap">
-          {sportFilters.map(sport => (
-            <button
-              key={sport}
-              onClick={() => setActiveSport(sport)}
-              className={`px-4 py-2 rounded-full font-medium transition-all ${
-                activeSport === sport
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-400'
-              }`}
-            >
-              {sport === 'All' ? '🏆 All' : `${sportEmojis[sport] || ''} ${sport}`}
-            </button>
-          ))}
+      {/* Advanced Filters - Entity & Sport */}
+      <div className="px-4 py-4 grid grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-gray-500 ml-1">Rank For</Label>
+          <Select value={activeEntity} onValueChange={(v: 'players' | 'teams') => setActiveEntity(v)}>
+            <SelectTrigger className="bg-white border-gray-200 rounded-xl h-10 shadow-sm">
+              <SelectValue placeholder="Select entity" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="players" className="rounded-lg">Players</SelectItem>
+              <SelectItem value="teams" className="rounded-lg">Teams</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-gray-500 ml-1">Sport</Label>
+          <Select value={activeSport} onValueChange={(v) => setActiveSport(v)}>
+            <SelectTrigger className="bg-white border-gray-200 rounded-xl h-10 shadow-sm">
+              <SelectValue placeholder="Select sport" />
+            </SelectTrigger>
+            <SelectContent>
+              {sportFilters.map(sport => (
+                <SelectItem key={sport} value={sport} className="rounded-lg">
+                  {sport === 'All' ? '🏆 All Sports' : `${sportEmojis[sport] || ''} ${sport}`}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      {/* Period Selector - 3 Large Pills */}
-      <div className="px-4 py-3 flex gap-2">
+      {/* Recharts Visualization */}
+      <div className="px-4 mb-4">
+        <Card className="rounded-2xl border-none shadow-md bg-white overflow-hidden">
+          <CardHeader className="pb-2 pt-4 px-4 flex flex-row items-center justify-between space-y-0">
+            <CardTitle className="text-sm font-bold text-gray-700 flex items-center gap-2">
+              <BarChart3 className="size-4 text-blue-600" />
+              Top 5 Performance
+            </CardTitle>
+            <Badge variant="secondary" className="text-[10px] bg-blue-50 text-blue-700 border-none">
+              {activeEntity === 'players' ? (activeCategory === 'mvps' ? 'MVPs' : 'Wins') : 'Wins'}
+            </Badge>
+          </CardHeader>
+          <CardContent className="p-0 h-48 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ top: 10, right: 20, left: -10, bottom: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                <XAxis 
+                  dataKey="name" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 10, fontWeight: 600, fill: '#6b7280' }}
+                  dy={10}
+                />
+                <YAxis hide />
+                <Tooltip 
+                  cursor={{ fill: '#f3f4f6', radius: 8 }}
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      return (
+                        <div className="bg-white p-2 border border-gray-100 shadow-xl rounded-lg text-xs">
+                          <p className="font-bold text-gray-900">{payload[0].payload.fullName}</p>
+                          <p className="text-blue-600 font-semibold">{payload[0].value} {activeEntity === 'players' ? (activeCategory === 'mvps' ? 'MVPs' : 'Wins') : 'Wins'}</p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={28}>
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={index === 0 ? '#2563eb' : index === 1 ? '#3b82f6' : index === 2 ? '#60a5fa' : '#93c5fd'} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Period Selector - 2 Large Pills */}
+      <div className="px-4 py-1 flex gap-2">
         <button
           onClick={() => setActivePeriod('alltime')}
-          className={`flex-1 py-3 rounded-full font-semibold transition-all ${
+          className={`flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all ${
             activePeriod === 'alltime'
-              ? 'bg-white text-blue-600 shadow-md'
-              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+              ? 'bg-blue-600 text-white shadow-md'
+              : 'bg-white text-gray-600 border border-gray-200'
           }`}
         >
           All Time
         </button>
         <button
           onClick={() => setActivePeriod('monthly')}
-          className={`flex-1 py-3 rounded-full font-semibold transition-all ${
+          className={`flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all ${
             activePeriod === 'monthly'
-              ? 'bg-white text-blue-600 shadow-md'
-              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+              ? 'bg-blue-600 text-white shadow-md'
+              : 'bg-white text-gray-600 border border-gray-200'
           }`}
         >
           This Month
         </button>
-        <button
-          onClick={() => setActivePeriod('teams')}
-          className={`flex-1 py-3 rounded-full font-semibold transition-all ${
-            activePeriod === 'teams'
-              ? 'bg-white text-blue-600 shadow-md'
-              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-          }`}
-        >
-          Teams
-        </button>
       </div>
 
-      {/* Category Toggle - Only for All Time and Monthly */}
-      {activePeriod !== 'teams' && (
+      {/* Category Toggle - Only for Players */}
+      {activeEntity === 'players' && (
         <div className="px-4 py-2 flex gap-2">
           <button
             onClick={() => setActiveCategory('mvps')}
@@ -194,7 +274,7 @@ export function LeaderboardScreen({ onBack }: LeaderboardScreenProps) {
       )}
 
       {/* Your Rank Banner */}
-      {currentUser && activePeriod !== 'teams' && (
+      {currentUser && activeEntity === 'players' && (
         <div className="mx-4 my-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl p-4 shadow-md">
           <p className="text-center font-semibold text-sm">
             Your Rank: <span className="text-lg font-bold">#{currentUser.rank}</span> · {currentUser.mvps} MVPs · {currentUser.wins} Wins · {currentUser.points} pts
@@ -205,7 +285,7 @@ export function LeaderboardScreen({ onBack }: LeaderboardScreenProps) {
       {/* Ranking List */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         {/* Player Rankings */}
-        {activePeriod !== 'teams' && (
+        {activeEntity === 'players' && (
           <>
             {/* Top 3 - Podium Cards */}
             {filteredPlayers.slice(0, 3).map((player, idx) => {
@@ -297,7 +377,7 @@ export function LeaderboardScreen({ onBack }: LeaderboardScreenProps) {
         )}
 
         {/* Team Rankings */}
-        {activePeriod === 'teams' && (
+        {activeEntity === 'teams' && (
           <>
             {filteredTeams.map((team, idx) => {
               const badge = getRankBadge(idx + 1);

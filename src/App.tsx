@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Bell } from 'lucide-react';
+import { usePermissions } from './hooks/usePermissions';
 import { SplashScreen } from './components/SplashScreen';
 import { OnboardingScreen } from './components/OnboardingScreen';
 import { LoginScreen } from './components/LoginScreen';
@@ -31,6 +32,8 @@ import { TournamentScreen } from './screens/TournamentScreen';
 import { TournamentDetailScreen } from './screens/TournamentDetailScreen';
 import { EventsScreen } from './screens/EventsScreen';
 import { SocialsScreen } from './screens/SocialsScreen';
+import { OrgDashboard } from './components/org/OrgDashboard';
+import { OrgPortal } from './components/org/OrgPortal';
 import { BottomNavigation } from './components/BottomNavigation';
 import { NotificationPanel } from './components/NotificationPanel';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -68,10 +71,13 @@ type AppScreen =
   | 'team-achievements'
   | 'leaderboard'
   | 'post-game-summary'
-  | 'participant-feedback';
+  | 'participant-feedback'
+  | 'org-dashboard'
+  | 'org-portal';
 
 export function AppContent() {
   const { currentUser, unreadCount, addNotification } = useAuth();
+  const { isOrganization } = usePermissions();
   const [isNotificationPanelOpen, setIsNotificationPanelOpen] = useState(false);
   const [currentScreen, setCurrentScreen] = useState<AppScreen>('splash');
   const [activeTab, setActiveTab] = useState('home');
@@ -110,6 +116,13 @@ export function AppContent() {
 
   useEffect(() => {
     if (currentScreen === 'splash') {
+      // Deep link: skip to a specific screen via URL hash (e.g. /#org-dashboard)
+      const hash = window.location.hash.replace('#', '') as AppScreen;
+      if (hash === 'org-dashboard' || hash === 'org-portal') {
+        setIsAuthenticated(true);
+        setCurrentScreen(hash);
+        return;
+      }
       const timer = setTimeout(() => {
         setCurrentScreen('onboarding');
       }, 2000);
@@ -325,12 +338,16 @@ export function AppContent() {
     setCreatedGameData(null);
     setCurrentScreen('history');
     setActiveTab('home');
-    setUserData(prev => ({
-      ...prev,
-      points: prev.points + 100,
-      gamesPlayed: prev.gamesPlayed + 1,
-    }));
-    toast.success('Game completed! You earned 100 points.');
+    if (!isOrganization) {
+      setUserData(prev => ({
+        ...prev,
+        points: prev.points + 100,
+        gamesPlayed: prev.gamesPlayed + 1,
+      }));
+      toast.success('Game completed! You earned 100 points.');
+    } else {
+      toast.success('Event completed successfully!');
+    }
   };
 
   const handleParticipantFinishGame = (gameId: string, gameTitle: string, organizer: any) => {
@@ -346,12 +363,16 @@ export function AppContent() {
     setParticipantFeedbackData(null);
     setCurrentScreen('history');
     setActiveTab('home');
-    setUserData(prev => ({
-      ...prev,
-      points: prev.points + 50,
-      gamesPlayed: prev.gamesPlayed + 1,
-    }));
-    toast.success('Feedback submitted! You earned 50 points.');
+    if (!isOrganization) {
+      setUserData(prev => ({
+        ...prev,
+        points: prev.points + 50,
+        gamesPlayed: prev.gamesPlayed + 1,
+      }));
+      toast.success('Feedback submitted! You earned 50 points.');
+    } else {
+      toast.success('Feedback submitted!');
+    }
   };
 
   const handleVerifyAccount = () => {
@@ -390,6 +411,7 @@ export function AppContent() {
     'profile',
     'history',
     'creator-game-view',
+    'org-dashboard',
   ].includes(currentScreen);
 
   const unreadMessages = 7; // Mock unread count
@@ -531,6 +553,24 @@ export function AppContent() {
           onJoinTournament={(tournamentId) => {
             setSelectedTournamentId(tournamentId);
             setCurrentScreen('tournament-detail');
+          }}
+        />
+      )}
+
+      {currentScreen === 'org-dashboard' && (
+        <OrgDashboard
+          onBack={() => {
+            setCurrentScreen('home');
+            setActiveTab('home');
+          }}
+        />
+      )}
+
+      {currentScreen === 'org-portal' && (
+        <OrgPortal
+          onBack={() => {
+            setCurrentScreen('home');
+            setActiveTab('home');
           }}
         />
       )}

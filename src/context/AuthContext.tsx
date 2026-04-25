@@ -48,6 +48,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * Add points to current user and update their state
    */
   const addPoints = (amount: number) => {
+    // Organizations are excluded from point-earning
+    if (currentUser.role === 'organization') return;
     updateUser({
       totalPoints: currentUser.totalPoints + amount,
     });
