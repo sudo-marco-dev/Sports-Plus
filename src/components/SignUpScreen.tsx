@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { User, Mail, Lock, MapPin, Calendar, Trophy, Upload, ArrowLeft, Camera, Eye } from 'lucide-react';
+import { User, Mail, Lock, MapPin, Calendar, Trophy, Upload, ArrowLeft, Camera, Eye, Building2, Briefcase, ChevronRight } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -16,8 +16,7 @@ interface SignUpScreenProps {
 
 const sports = ['Basketball', 'Volleyball', 'Football', 'Badminton', 'Tennis', 'Swimming'];
 const skillLevels = ['Casual', 'Novice', 'Elite'];
-const accountTypes = ['Player', 'Coach', 'Organization'];
-const coachSpecializations = ['Basketball', 'Football', 'Badminton', 'Volleyball', 'Tennis', 'Multiple'];
+const accountTypes = ['Player', 'Organization'];
 
 export function SignUpScreen({ onSignUp, onBack }: SignUpScreenProps) {
   const [formData, setFormData] = useState({
@@ -31,19 +30,19 @@ export function SignUpScreen({ onSignUp, onBack }: SignUpScreenProps) {
     isMinor: false,
     accountType: 'Player',
     isPWD: false,
-    specialization: '',
     selectedSports: [] as string[],
     skillLevel: '',
     location: '',
-    agreedToTerms: false,
-    parentGuardianName: '',
-    parentEmail: '',
-    hasParentalConsent: false,
+    agreedToTerms: true, // Default to true for demo
+    // Organization fields
+    orgName: '',
+    officialDesignation: '',
+    businessAddress: '',
   });
+
   const [idUploaded, setIdUploaded] = useState(false);
   const [faceVerified, setFaceVerified] = useState(false);
   const [showFaceVerification, setShowFaceVerification] = useState(false);
-  const [showParentalConsentModal, setShowParentalConsentModal] = useState(false);
 
   const computeAge = (birthDate: string): number => {
     if (!birthDate) return 0;
@@ -75,11 +74,8 @@ export function SignUpScreen({ onSignUp, onBack }: SignUpScreenProps) {
   };
 
   const handleIdUpload = () => {
-    // Simulate ID upload
     setIdUploaded(true);
-    toast.success('ID uploaded successfully!');
-    
-    // After ID upload, prompt for face verification
+    toast.success('Document uploaded successfully!');
     setTimeout(() => {
       setShowFaceVerification(true);
     }, 500);
@@ -87,422 +83,303 @@ export function SignUpScreen({ onSignUp, onBack }: SignUpScreenProps) {
 
   const handleFaceVerified = () => {
     setFaceVerified(true);
-    toast.success('Face verified! You can now create your account.');
+    toast.success('Identity verified!');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (formData.password !== formData.confirmPassword) {
-      toast.error('Passwords do not match!');
-      return;
-    }
-    
-    if (!idUploaded) {
-      toast.error('Please upload a valid ID to continue');
-      return;
-    }
-    
-    if (!faceVerified) {
-      toast.error('Please complete face verification');
-      return;
-    }
-    
-    if (!formData.agreedToTerms) {
-      toast.error('Please agree to the terms and conditions');
-      return;
-    }
-
-    // If user is a minor and hasn't provided parental consent, show modal
-    if (formData.isMinor && !formData.hasParentalConsent) {
-      setShowParentalConsentModal(true);
-      return;
-    }
-    
+    // Immediate bypass for demo
     onSignUp({ ...formData, isVerified: true, faceVerified: true });
   };
 
-  const handleParentalConsentSubmit = (parentGuardianName: string, parentEmail: string) => {
-    setFormData(prev => ({
-      ...prev,
-      parentGuardianName,
-      parentEmail,
-      hasParentalConsent: true,
-    }));
-    setShowParentalConsentModal(false);
-    // Proceed with signup after consent is given
-    onSignUp({ 
-      ...formData, 
-      parentGuardianName,
-      parentEmail,
-      hasParentalConsent: true,
-      isVerified: true, 
-      faceVerified: true 
-    });
-  };
-
   return (
-    <div className="h-screen w-full max-w-md mx-auto bg-gray-50 flex flex-col">
-      <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-green-600 pt-8 pb-12 px-6">
-        <button onClick={onBack} className="mb-4 text-white/90 hover:text-white flex items-center gap-2">
+    <div className="h-full w-full bg-gray-50 flex flex-col overflow-hidden">
+      {/* Header - Blue/Green Gradient */}
+      <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-green-600 pt-10 pb-20 px-8 relative shrink-0">
+        <button
+          onClick={onBack}
+          className="mb-6 p-2 text-white/80 hover:text-white transition-colors flex items-center gap-2 text-sm font-medium"
+        >
           <ArrowLeft className="w-5 h-5" />
-          Back
+          <span>Back</span>
         </button>
-        <div className="flex items-center gap-3">
-          <div className="bg-white rounded-2xl p-3">
-            <Trophy className="w-7 h-7 text-blue-600" strokeWidth={2.5} />
+
+        <div className="flex items-center gap-4">
+          <div className="bg-white rounded-2xl p-3 shadow-lg">
+            <Trophy className="w-8 h-8 text-blue-600" strokeWidth={2} />
           </div>
           <div>
-            <h1 className="text-white text-2xl">Create Account</h1>
+            <h1 className="text-white text-2xl font-bold tracking-tight">Create Account</h1>
             <p className="text-white/80 text-sm">Join the SportsPlus community</p>
           </div>
         </div>
       </div>
 
-      <ScrollArea className="flex-1 px-6 -mt-6">
-        <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-6 mb-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="fullName" className="text-gray-700">Full Name</Label>
-              <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <Input
-                  id="fullName"
-                  value={formData.fullName}
-                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                  placeholder="Your Full Name"
-                  className="pl-12 h-12 rounded-xl border-gray-200 bg-gray-50"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="username" className="text-gray-700">Username</Label>
-              <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <Input
-                  id="username"
-                  value={formData.username}
-                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  placeholder="Username"
-                  className="pl-12 h-12 rounded-xl border-gray-200 bg-gray-50"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-gray-700">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="your.email@example.com"
-                  className="pl-12 h-12 rounded-xl border-gray-200 bg-gray-50"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-gray-700">Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <Input
-                  id="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  placeholder="••••••••"
-                  className="pl-12 h-12 rounded-xl border-gray-200 bg-gray-50"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-gray-700">Confirm Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  value={formData.confirmPassword}
-                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                  placeholder="••••••••"
-                  className="pl-12 h-12 rounded-xl border-gray-200 bg-gray-50"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="dateOfBirth" className="text-gray-700">Date of Birth</Label>
-              <div className="relative">
-                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <Input
-                  id="dateOfBirth"
-                  type="date"
-                  value={formData.dateOfBirth}
-                  onChange={handleDateOfBirthChange}
-                  className="pl-12 h-12 rounded-xl border-gray-200 bg-gray-50"
-                  required
-                />
-              </div>
-              {formData.dateOfBirth && formData.age > 0 && (
-                <p className="text-xs text-gray-600">Age: {formData.age} years old</p>
-              )}
-              {formData.isMinor && (
-                <p className="text-xs text-orange-600 font-semibold">⚠️ Parental consent will be required</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-gray-700">Account Type</Label>
-              <div className="grid grid-cols-3 gap-2">
-                {accountTypes.map((type) => (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => setFormData({ ...formData, accountType: type, specialization: type === 'Coach' ? formData.specialization : '' })}
-                    className={`py-3 rounded-xl border-2 transition-all text-center text-sm ${
-                      formData.accountType === type
-                        ? 'border-blue-600 bg-blue-50 text-blue-700 font-semibold'
-                        : 'border-gray-200 text-gray-700 hover:border-gray-300'
+      <ScrollArea className="flex-1 px-4 -mt-8 pb-10 z-10">
+        <div className="bg-white rounded-[2rem] shadow-xl shadow-black/5 p-6 space-y-8 mb-10">
+          {/* Role Selection Toggle */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-bold text-gray-700 ml-1">Account Type</h3>
+            <div className="flex gap-3">
+              {accountTypes.map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => setFormData({ ...formData, accountType: type })}
+                  className={`flex-1 py-3 rounded-2xl border-2 transition-all text-center font-semibold text-sm ${formData.accountType === type
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-gray-100 text-gray-500 hover:border-gray-200'
                     }`}
-                  >
-                    {type}
-                  </button>
-                ))}
-              </div>
+                >
+                  {type}
+                </button>
+              ))}
             </div>
+          </div>
 
-            {formData.accountType === 'Coach' && (
-              <div className="space-y-2">
-                <Label className="text-gray-700">Primary Sport Specialization</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  {coachSpecializations.map((spec) => (
-                    <button
-                      key={spec}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, specialization: spec })}
-                      className={`py-3 px-4 rounded-xl border-2 transition-all text-sm ${
-                        formData.specialization === spec
-                          ? 'border-teal-600 bg-teal-50 text-teal-700 font-semibold'
-                          : 'border-gray-200 text-gray-700 hover:border-gray-300'
-                      }`}
-                    >
-                      {spec}
-                    </button>
-                  ))}
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Basic Info Section */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-bold text-gray-900">Basic Information</h3>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="fullName" className="text-gray-700 font-bold">
+                  {formData.accountType === 'Organization' ? 'Contact Person Name' : 'Full Name'}
+                </Label>
+                <div className="relative group">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
+                  <Input
+                    id="fullName"
+                    value={formData.fullName}
+                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                    placeholder="Enter name"
+                    className="pl-12 h-14 rounded-2xl border-gray-200 bg-transparent focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                  />
                 </div>
               </div>
-            )}
 
-            {formData.accountType === 'Player' && (
-              <>
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <Checkbox
-                      checked={formData.isPWD}
-                      onCheckedChange={(checked) => setFormData({ ...formData, isPWD: checked as boolean })}
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-gray-700 font-bold">Email Address</Label>
+                <div className="relative group">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    placeholder="name@example.com"
+                    className="pl-12 h-14 rounded-2xl border-gray-200 bg-transparent focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="password" className="text-gray-700 font-bold">Password</Label>
+                <div className="relative group">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
+                  <Input
+                    id="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    placeholder="••••••••"
+                    className="pl-12 h-14 rounded-2xl border-gray-200 bg-transparent focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                  />
+                </div>
+              </div>
+
+              {formData.accountType === 'Player' && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="dateOfBirth" className="text-gray-700 font-bold">Date of Birth</Label>
+                  <div className="relative group">
+                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
+                    <Input
+                      id="dateOfBirth"
+                      type="date"
+                      value={formData.dateOfBirth}
+                      onChange={handleDateOfBirthChange}
+                      className="pl-12 h-14 rounded-2xl border-gray-200 bg-transparent focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                     />
-                    <span className="text-gray-700">I am a PWD (Person with Disability)</span>
-                  </Label>
+                  </div>
                 </div>
-              </>
-            )}
-
-            <div className="space-y-2">
-              <Label className="text-gray-700">Favorite Sports (Select multiple)</Label>
-              <div className="grid grid-cols-2 gap-2">
-                {sports.map((sport) => (
-                  <button
-                    key={sport}
-                    type="button"
-                    onClick={() => toggleSport(sport)}
-                    className={`py-3 px-4 rounded-xl border-2 transition-all text-sm ${
-                      formData.selectedSports.includes(sport)
-                        ? 'border-blue-600 bg-blue-50 text-blue-700'
-                        : 'border-gray-200 text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    {sport}
-                  </button>
-                ))}
-              </div>
+              )}
             </div>
 
-            {formData.accountType !== 'Organization' && (
-              <div className="space-y-2">
-                <Label className="text-gray-700">Skill Level</Label>
-              <div className="grid grid-cols-3 gap-2">
-                {skillLevels.map((level) => (
-                  <button
-                    key={level}
-                    type="button"
-                    onClick={() => setFormData({ ...formData, skillLevel: level })}
-                    className={`py-3 rounded-xl border-2 transition-all text-center ${
-                      formData.skillLevel === level
-                        ? 'border-blue-600 bg-blue-50 text-blue-700'
-                        : 'border-gray-200 text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    {level}
-                  </button>
-                ))}
+            {/* Role Specific Section */}
+            {formData.accountType === 'Organization' ? (
+              <div className="space-y-4">
+                <h3 className="text-sm font-bold text-gray-900">Organization Details</h3>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="orgName" className="text-gray-700 font-bold">Organization Name</Label>
+                  <div className="relative group">
+                    <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
+                    <Input
+                      id="orgName"
+                      value={formData.orgName}
+                      onChange={(e) => setFormData({ ...formData, orgName: e.target.value })}
+                      placeholder="e.g. Brgy. Sports Council"
+                      className="pl-12 h-14 rounded-2xl border-gray-200 bg-transparent focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="officialDesignation" className="text-gray-700 font-bold">Official Designation</Label>
+                  <div className="relative group">
+                    <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
+                    <Input
+                      id="officialDesignation"
+                      value={formData.officialDesignation}
+                      onChange={(e) => setFormData({ ...formData, officialDesignation: e.target.value })}
+                      placeholder="e.g. Sports Coordinator"
+                      className="pl-12 h-14 rounded-2xl border-gray-200 bg-transparent focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="businessAddress" className="text-gray-700 font-bold">Official Business Address</Label>
+                  <div className="relative group">
+                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
+                    <Input
+                      id="businessAddress"
+                      value={formData.businessAddress}
+                      onChange={(e) => setFormData({ ...formData, businessAddress: e.target.value })}
+                      placeholder="Enter full address"
+                      className="pl-12 h-14 rounded-2xl border-gray-200 bg-transparent focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                    />
+                  </div>
+                </div>
               </div>
+            ) : (
+              <div className="space-y-6">
+                <h3 className="text-sm font-bold text-gray-900">Player Profile</h3>
+
+                <div className="space-y-3">
+                  <Label className="text-gray-700 font-bold">Favorite Sports</Label>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {sports.map((sport) => (
+                      <button
+                        key={sport}
+                        type="button"
+                        onClick={() => toggleSport(sport)}
+                        className={`py-3 px-4 rounded-full border transition-all text-sm font-semibold ${formData.selectedSports.includes(sport)
+                            ? 'border-blue-500 bg-blue-50 text-blue-700'
+                            : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                          }`}
+                      >
+                        {sport}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <Label className="text-gray-700 font-bold">Skill Level</Label>
+                  <div className="grid grid-cols-3 gap-2.5">
+                    {skillLevels.map((level) => (
+                      <button
+                        key={level}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, skillLevel: level })}
+                        className={`py-3 rounded-full border transition-all text-center text-sm font-semibold ${formData.skillLevel === level
+                            ? 'border-blue-500 bg-blue-50 text-blue-700'
+                            : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                          }`}
+                      >
+                        {level}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                  <Checkbox
+                    id="isPWD"
+                    checked={formData.isPWD}
+                    onCheckedChange={(checked) => setFormData({ ...formData, isPWD: checked as boolean })}
+                  />
+                  <label htmlFor="isPWD" className="text-sm text-gray-700 font-bold cursor-pointer">
+                    I am a PWD (Person with Disability)
+                  </label>
+                </div>
               </div>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="location" className="text-gray-700">Location</Label>
-              <div className="relative">
-                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <Input
-                  id="location"
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  placeholder="Select location on map"
-                  className="pl-12 h-12 rounded-xl border-gray-200 bg-gray-50"
-                  required
-                />
+            {/* Verification Section */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-gray-900">
+                  {formData.accountType === 'Organization' ? 'Legal Verification' : 'Identity Verification'}
+                </h3>
+                <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-bold">*Required</span>
               </div>
-              <p className="text-xs text-gray-500">📍 Tap to select on map</p>
-            </div>
 
-            <div className="space-y-3 pt-2">
-              <div className="flex items-center gap-2">
-                <Label className="text-gray-700">ID Verification</Label>
-                <span className="text-red-500 text-sm font-semibold">*Required</span>
-              </div>
-              <div className={`border-2 ${
-                faceVerified 
-                  ? 'border-green-300 bg-green-50' 
-                  : idUploaded 
-                  ? 'border-blue-300 bg-blue-50'
-                  : 'border-dashed border-gray-300 bg-gray-50'
-              } rounded-xl p-6 text-center transition-all`}>
-                {!idUploaded && !faceVerified ? (
-                  <>
-                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600 mb-1">Upload valid ID</p>
-                    <p className="text-xs text-gray-500 mb-3">Required to create and join games</p>
+              <div className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all ${faceVerified ? 'border-green-300 bg-green-50' : 'border-gray-200 bg-gray-50 hover:bg-gray-100'
+                }`}>
+                {!idUploaded ? (
+                  <div className="space-y-3">
+                    <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center mx-auto shadow-sm border border-gray-100">
+                      <Upload className="w-6 h-6 text-gray-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-gray-900">
+                        {formData.accountType === 'Organization' ? 'Government Permit / License' : 'Valid Government ID'}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">Required for full platform access</p>
+                    </div>
                     <Button
                       type="button"
                       onClick={handleIdUpload}
                       variant="outline"
-                      className="mt-2 rounded-xl"
+                      className="mt-2 rounded-xl border-gray-200 text-gray-700 font-bold hover:bg-gray-50 bg-white shadow-sm"
                     >
                       <Upload className="w-4 h-4 mr-2" />
                       Choose File
                     </Button>
-                  </>
-                ) : idUploaded && !faceVerified ? (
-                  <>
-                    <Eye className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                    <p className="text-sm text-blue-700 font-semibold mb-1">ID Uploaded!</p>
-                    <p className="text-xs text-blue-600 mb-3">Now verify your face to continue</p>
+                  </div>
+                ) : !faceVerified ? (
+                  <div className="space-y-3">
+                    <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto animate-pulse">
+                      <Camera className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <p className="text-sm font-bold text-blue-700">Almost there!</p>
                     <Button
                       type="button"
                       onClick={() => setShowFaceVerification(true)}
-                      className="mt-2 rounded-xl bg-blue-600 hover:bg-blue-700"
+                      className="mt-2 rounded-xl bg-blue-600 hover:bg-blue-700 font-bold text-white shadow-lg shadow-blue-200"
                     >
-                      <Camera className="w-4 h-4 mr-2" />
                       Verify Face
                     </Button>
-                  </>
+                  </div>
                 ) : (
                   <div className="space-y-2">
-                    <div className="flex items-center justify-center gap-2 text-green-600">
-                      <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">✓</div>
-                      <span className="text-sm font-semibold">Fully Verified</span>
+                    <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                      <span className="text-green-600 text-xl font-bold">✓</span>
                     </div>
-                    <div className="flex items-center justify-center gap-4 text-xs text-green-700">
-                      <div className="flex items-center gap-1">
-                        <Upload className="w-3 h-3" />
-                        <span>ID</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Eye className="w-3 h-3" />
-                        <span>Face</span>
-                      </div>
-                    </div>
+                    <p className="text-sm font-black text-green-700 uppercase tracking-tight">Verified & Secure</p>
                   </div>
                 )}
               </div>
-              
-              {faceVerified && (
-                <div className="bg-green-50 border border-green-200 rounded-xl p-3">
-                  <p className="text-xs text-green-700 text-center">
-                    ✓ Your identity has been verified. You can now create your account!
-                  </p>
-                </div>
-              )}
             </div>
 
-            <div className="flex items-start gap-3 pt-2">
+            <div className="flex items-start gap-3 p-2">
               <Checkbox
                 id="terms"
                 checked={formData.agreedToTerms}
                 onCheckedChange={(checked) => setFormData({ ...formData, agreedToTerms: checked as boolean })}
                 className="mt-1"
               />
-              <label htmlFor="terms" className="text-sm text-gray-600 leading-relaxed">
-                I agree to the{' '}
-                <Dialog>
-                  <DialogTrigger className="text-blue-600 hover:underline">
-                    Terms & Conditions
-                  </DialogTrigger>
-                  <DialogContent className="max-w-[90%] max-h-[80vh] rounded-2xl">
-                    <DialogHeader>
-                      <DialogTitle>Terms & Conditions</DialogTitle>
-                      <DialogDescription>
-                        Please review our terms and conditions before creating an account
-                      </DialogDescription>
-                    </DialogHeader>
-                    <ScrollArea className="h-[60vh] pr-4 mt-4">
-                      <div className="space-y-4 text-sm">
-                        <section>
-                          <h3 className="text-gray-900 mb-2">1. Acceptance of Terms</h3>
-                          <p className="text-gray-600">By creating an account on SportsPlus, you agree to comply with these terms and conditions.</p>
-                        </section>
-                        <section>
-                          <h3 className="text-gray-900 mb-2">2. User Responsibilities</h3>
-                          <p className="text-gray-600">You are responsible for maintaining the confidentiality of your account and for all activities under your account.</p>
-                        </section>
-                        <section>
-                          <h3 className="text-gray-900 mb-2">3. Community Safety</h3>
-                          <p className="text-gray-600">Users must show up to confirmed games. No-shows negatively impact reliability scores. Repeated violations may result in account suspension.</p>
-                        </section>
-                        <section>
-                          <h3 className="text-gray-900 mb-2">4. Verification</h3>
-                          <p className="text-gray-600">ID and face verification are required to create and join games. Verified users are trusted by the community.</p>
-                        </section>
-                        <section>
-                          <h3 className="text-gray-900 mb-2">5. Privacy Policy</h3>
-                          <p className="text-gray-600">We collect and use your data to provide our services. Your location data is used to show nearby games. Personal information is never shared with third parties without consent. Biometric data from face verification is encrypted and used solely for identity verification.</p>
-                        </section>
-                        <section>
-                          <h3 className="text-gray-900 mb-2">6. Reporting & Safety</h3>
-                          <p className="text-gray-600">Users can report inappropriate behavior. False reports may affect your reliability score. Always meet in public, well-lit locations.</p>
-                        </section>
-                      </div>
-                    </ScrollArea>
-                  </DialogContent>
-                </Dialog>
-                {' '}and Privacy Policy
+              <label htmlFor="terms" className="text-xs text-gray-500 leading-relaxed font-medium mt-0.5">
+                I agree to the <span className="text-blue-500 font-bold">Terms & Conditions</span> and <span className="text-blue-500 font-bold">Privacy Policy</span>.
               </label>
             </div>
 
+            {/* Bottom Button Fixed in Scroll area for this layout */}
             <Button
               type="submit"
-              className="w-full h-14 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 rounded-2xl shadow-lg shadow-blue-500/30 mt-6"
-              disabled={!formData.agreedToTerms || !faceVerified}
+              className="w-full h-14 bg-gradient-to-r from-blue-400 to-green-400 hover:from-blue-500 hover:to-green-500 text-white font-bold text-base rounded-2xl shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2 mb-10"
             >
               Create Account
             </Button>
@@ -510,103 +387,6 @@ export function SignUpScreen({ onSignUp, onBack }: SignUpScreenProps) {
         </div>
       </ScrollArea>
 
-      {/* Parental Consent Modal */}
-      {showParentalConsentModal && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 relative max-h-[90vh] overflow-y-auto">
-            <button
-              onClick={() => setShowParentalConsentModal(false)}
-              className="absolute right-4 top-4 p-2 hover:bg-gray-100 rounded-full"
-            >
-              ✕
-            </button>
-            
-            <div>
-              <h2 className="text-lg font-bold text-gray-900">Parental Consent Required</h2>
-              <p className="text-sm text-gray-600 mt-1">
-                Since you are under 18, a parent or guardian must provide consent before your account can be created.
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              <div>
-                <Label htmlFor="parentGuardianName" className="text-sm text-gray-700">Parent/Guardian Full Name *</Label>
-                <Input
-                  id="parentGuardianName"
-                  type="text"
-                  placeholder="e.g., Jane Doe"
-                  value={formData.parentGuardianName}
-                  onChange={(e) => setFormData({ ...formData, parentGuardianName: e.target.value })}
-                  className="mt-1 h-10 rounded-lg border-gray-200 bg-gray-50"
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="parentEmail" className="text-sm text-gray-700">Parent/Guardian Email *</Label>
-                <Input
-                  id="parentEmail"
-                  type="email"
-                  placeholder="parent@example.com"
-                  value={formData.parentEmail}
-                  onChange={(e) => setFormData({ ...formData, parentEmail: e.target.value })}
-                  className="mt-1 h-10 rounded-lg border-gray-200 bg-gray-50"
-                  required
-                />
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <p className="text-xs text-blue-700 leading-relaxed">
-                  📧 A confirmation email will be sent to the parent/guardian to verify consent. The account will be activated once consent is confirmed.
-                </p>
-              </div>
-
-              <div className="flex items-start gap-3 py-2">
-                <Checkbox
-                  id="parentalConsent"
-                  checked={formData.parentGuardianName !== '' && formData.parentEmail !== ''}
-                  disabled
-                  className="mt-1"
-                />
-                <label htmlFor="parentalConsent" className="text-xs text-gray-600 leading-relaxed">
-                  I confirm that the information provided above is accurate and I am the parent/guardian of the account holder.
-                </label>
-              </div>
-            </div>
-
-            <div className="flex gap-2 pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setShowParentalConsentModal(false)}
-                className="flex-1 h-10 rounded-lg"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="button"
-                onClick={() => {
-                  if (!formData.parentGuardianName.trim() || !formData.parentEmail.trim()) {
-                    toast.error('Please fill in all fields');
-                    return;
-                  }
-                  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.parentEmail)) {
-                    toast.error('Please enter a valid email address');
-                    return;
-                  }
-                  handleParentalConsentSubmit(formData.parentGuardianName, formData.parentEmail);
-                  toast.success('Parental consent submitted! Account created successfully.');
-                }}
-                className="flex-1 h-10 rounded-lg bg-green-600 hover:bg-green-700"
-              >
-                Continue
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Face Verification Dialog */}
       <FaceVerificationDialog
         isOpen={showFaceVerification}
         onClose={() => setShowFaceVerification(false)}

@@ -37,11 +37,10 @@ import { OrgPortal } from './components/org/OrgPortal';
 import { BottomNavigation } from './components/BottomNavigation';
 import { NotificationPanel } from './components/NotificationPanel';
 import { LandingPage } from './components/LandingPage';
+import { ScoutModeScreen } from './components/ScoutModeScreen';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { mockGames, mockUsers } from './data/mockData';
 import { Toaster, toast } from 'sonner';
-import { RoleSelectionScreen, UserRole } from './components/RoleSelectionScreen';
-import { UnifiedSignUpScreen } from './components/UnifiedSignUpScreen';
 import { MobileContainer } from './components/MobileContainer';
 
 type AppScreen = 
@@ -78,9 +77,9 @@ type AppScreen =
   | 'participant-feedback'
   | 'org-dashboard'
   | 'org-portal'
-  | 'landing'
-  | 'role-selection'
-  | 'unified-signup';
+  | 'org-portal'
+  | 'scout-mode'
+  | 'landing';
 
 export function AppContent() {
   const { currentUser, unreadCount, addNotification } = useAuth();
@@ -89,7 +88,6 @@ export function AppContent() {
   const [currentScreen, setCurrentScreen] = useState<AppScreen>('splash');
   const [activeTab, setActiveTab] = useState('home');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [userData, setUserData] = useState({
     name: 'John Doe',
     username: 'johndoe',
@@ -126,7 +124,7 @@ export function AppContent() {
     if (currentScreen === 'splash') {
       // Deep link: skip to a specific screen via URL hash (e.g. /#org-dashboard)
       const hash = window.location.hash.replace('#', '') as AppScreen;
-      if (['org-dashboard', 'org-portal', 'landing'].includes(hash)) {
+      if (['org-dashboard', 'org-portal', 'landing', 'scout-mode', 'signup'].includes(hash)) {
         if (hash === 'org-dashboard' || hash === 'org-portal') {
           setIsAuthenticated(true);
         }
@@ -148,7 +146,7 @@ export function AppContent() {
   };
 
   const handleSignUp = (signUpData: any) => {
-    const role = signUpData.role || 'player';
+    const role = signUpData.role || signUpData.accountType?.toLowerCase() || 'player';
     setUserData({
       name: signUpData.fullName,
       username: signUpData.fullName.toLowerCase().replace(/\s+/g, ''),
@@ -470,8 +468,8 @@ export function AppContent() {
       {currentScreen === 'landing' && (
         <LandingPage 
           onGetStarted={() => {
-            window.location.hash = '#role-selection';
-            setCurrentScreen('role-selection');
+            window.location.hash = '#signup';
+            setCurrentScreen('signup');
           }}
           onSignIn={() => {
             window.location.hash = '';
@@ -484,23 +482,14 @@ export function AppContent() {
         />
       )}
 
-      {currentScreen === 'role-selection' && (
-        <RoleSelectionScreen 
-          onSelect={(role) => {
-            setSelectedRole(role);
-            setCurrentScreen('unified-signup');
-          }}
-          onBack={() => {
-            setCurrentScreen('landing');
-          }}
-        />
+      {currentScreen === 'scout-mode' && (
+        <ScoutModeScreen onBack={() => setCurrentScreen('landing')} />
       )}
 
-      {currentScreen === 'unified-signup' && selectedRole && (
-        <UnifiedSignUpScreen 
-          role={selectedRole}
+      {currentScreen === 'signup' && (
+        <SignUpScreen 
           onSignUp={handleSignUp}
-          onBack={() => setCurrentScreen('role-selection')}
+          onBack={() => setCurrentScreen('landing')}
         />
       )}
 
@@ -512,7 +501,7 @@ export function AppContent() {
       {currentScreen === 'login' && (
         <LoginScreen
           onLogin={handleLogin}
-          onSignUp={() => setCurrentScreen('role-selection')}
+          onSignUp={() => setCurrentScreen('signup')}
           onForgotPassword={() => setCurrentScreen('forgot-password')}
         />
       )}
