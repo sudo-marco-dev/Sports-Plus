@@ -78,10 +78,8 @@ type AppScreen =
   | 'org-dashboard'
   | 'org-portal'
   | 'landing'
-  | 'scout-mode'
   | 'role-selection'
-  | 'unified-signup'
-  | 'coach-dashboard';
+  | 'unified-signup';
 
 export function AppContent() {
   const { currentUser, unreadCount, addNotification } = useAuth();
@@ -127,7 +125,7 @@ export function AppContent() {
     if (currentScreen === 'splash') {
       // Deep link: skip to a specific screen via URL hash (e.g. /#org-dashboard)
       const hash = window.location.hash.replace('#', '') as AppScreen;
-      if (['org-dashboard', 'org-portal', 'landing', 'scout-mode'].includes(hash)) {
+      if (['org-dashboard', 'org-portal', 'landing'].includes(hash)) {
         if (hash === 'org-dashboard' || hash === 'org-portal') {
           setIsAuthenticated(true);
         }
@@ -170,10 +168,6 @@ export function AppContent() {
       setCurrentScreen('org-portal');
       setActiveTab('home');
       toast.success('Organization registered successfully! Welcome to the portal.');
-    } else if (role === 'coach') {
-      setCurrentScreen('coach-dashboard');
-      setActiveTab('home');
-      toast.success('Coach profile created! Welcome to your dashboard.');
     } else {
       setCurrentScreen('home');
       setActiveTab('home');
@@ -448,7 +442,10 @@ export function AppContent() {
   const hasActiveGame = !!(createdGameData || joinedGameData);
 
   return (
-    <div className="size-full flex items-center justify-center bg-gray-100">
+    <div 
+      className="w-full max-w-md mx-auto min-h-screen shadow-2xl border-x border-gray-200 bg-background relative flex flex-col overflow-hidden"
+      style={{ maxWidth: '430px' }}
+    >
       {/* Notification Bell Icon - positioned in header if authenticated */}
       {isAuthenticated && (
         <div className="fixed top-4 right-4 z-50">
@@ -509,15 +506,6 @@ export function AppContent() {
         />
       )}
 
-      {currentScreen === 'scout-mode' && (
-        <LeaderboardScreen 
-          isPublic={true}
-          onBack={() => {
-            window.location.hash = '#landing';
-            setCurrentScreen('landing');
-          }} 
-        />
-      )}
 
       {currentScreen === 'onboarding' && (
         <OnboardingScreen onComplete={() => setCurrentScreen('login')} />
@@ -665,29 +653,6 @@ export function AppContent() {
         />
       )}
 
-      {currentScreen === 'coach-dashboard' && (
-        <div className="flex-1 flex flex-col">
-          <div className="bg-white p-6 border-b border-slate-100 flex items-center justify-between">
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight">Coach Dashboard</h1>
-            <button onClick={() => setCurrentScreen('home')} className="text-xs text-purple-600 font-bold uppercase tracking-wider">Home</button>
-          </div>
-          <div className="flex-1 p-6 bg-slate-50 flex flex-col items-center justify-center text-center space-y-4">
-             <div className="w-20 h-20 bg-purple-100 rounded-3xl flex items-center justify-center text-purple-600 shadow-inner">
-               <Trophy className="w-10 h-10" />
-             </div>
-             <div>
-               <h2 className="text-lg font-bold text-slate-800">Welcome, Coach {userData.name}!</h2>
-               <p className="text-sm text-slate-500 max-w-[200px] mx-auto mt-2">Your dashboard is being initialized with player analytics and team management tools.</p>
-             </div>
-             <button 
-               onClick={() => setCurrentScreen('leaderboard')}
-               className="px-6 py-3 bg-purple-600 text-white rounded-2xl font-bold text-sm shadow-xl shadow-purple-200"
-             >
-               View Leaderboards
-             </button>
-          </div>
-        </div>
-      )}
 
       {currentScreen === 'team-detail' && selectedTeamId && (
         <TeamDetailScreen 

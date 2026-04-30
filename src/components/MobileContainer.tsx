@@ -7,7 +7,10 @@ interface MobileContainerProps {
 
 export function MobileContainer({ children, className = '' }: MobileContainerProps) {
   return (
-    <div className={`max-w-[430px] w-full mx-auto min-h-screen bg-white shadow-2xl relative flex flex-col ${className}`}>
+    <div 
+      className={`max-w-md w-full mx-auto min-h-screen bg-background shadow-2xl border-x border-slate-200 dark:border-slate-800 relative flex flex-col ${className}`}
+      style={{ maxWidth: '430px' }}
+    >
       {children}
     </div>
   );

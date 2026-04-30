@@ -2,7 +2,7 @@ import React from 'react';
 import { User, Building2, ShieldCheck, ChevronRight, ArrowLeft } from 'lucide-react';
 import { MobileContainer } from './MobileContainer';
 
-export type UserRole = 'player' | 'organization' | 'coach';
+export type UserRole = 'player' | 'organization';
 
 interface RoleSelectionScreenProps {
   onSelect: (role: UserRole) => void;
@@ -25,18 +25,11 @@ export function RoleSelectionScreen({ onSelect, onBack }: RoleSelectionScreenPro
       icon: <Building2 className="w-8 h-8" />,
       color: 'from-purple-500 to-fuchsia-600',
     },
-    {
-      id: 'coach' as UserRole,
-      title: 'Coach/Scout',
-      description: 'View public analytics and rankings or manage a team.',
-      icon: <ShieldCheck className="w-8 h-8" />,
-      color: 'from-emerald-500 to-teal-600',
-    },
   ];
 
   return (
     <MobileContainer className="bg-slate-50">
-      <div className="flex flex-col h-full px-6 py-8">
+      <div className="flex flex-col h-full px-10 py-8">
         {/* Header */}
         <div className="flex items-center gap-4 mb-10">
           <button 
@@ -51,13 +44,13 @@ export function RoleSelectionScreen({ onSelect, onBack }: RoleSelectionScreenPro
           </div>
         </div>
 
-        {/* Roles Grid */}
-        <div className="flex-1 space-y-4">
+        {/* Roles Grid - Centered */}
+        <div className="flex-1 flex flex-col justify-center space-y-4">
           {roles.map((role) => (
             <button
               key={role.id}
               onClick={() => onSelect(role.id)}
-              className="w-full group text-left p-5 rounded-3xl bg-white border-2 border-transparent hover:border-purple-500 hover:shadow-xl transition-all duration-300 relative overflow-hidden"
+              className="w-full group text-left p-6 rounded-3xl bg-white border-2 border-transparent hover:border-purple-500 hover:shadow-xl transition-all duration-300 relative overflow-hidden"
             >
               <div className="flex items-center gap-5 relative z-10">
                 <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${role.color} flex items-center justify-center text-white shadow-lg transform group-hover:scale-110 transition-transform duration-300`}>
@@ -77,6 +70,7 @@ export function RoleSelectionScreen({ onSelect, onBack }: RoleSelectionScreenPro
             </button>
           ))}
         </div>
+
 
         <div className="mt-8 text-center px-4">
           <p className="text-slate-400 text-xs leading-relaxed">
