@@ -100,48 +100,48 @@ export function UnifiedSignUpScreen({ role, onSignUp, onBack }: UnifiedSignUpScr
   };
 
   return (
-    <MobileContainer className="bg-white dark:bg-slate-900 transition-colors">
-      {/* Header - Fixed contrast: Light background with dark text */}
-      <div className="bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 dark:from-slate-800 dark:via-slate-850 dark:to-slate-900 pt-10 pb-12 px-10 relative border-b border-purple-100/50 dark:border-slate-800">
+    <MobileContainer className="bg-gray-50 dark:bg-slate-950 transition-colors">
+      {/* Header - Dynamic Gradient matching Login */}
+      <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-green-600 pt-10 pb-16 px-10 relative rounded-b-[3rem] shadow-lg shadow-blue-900/20">
         <button 
           onClick={onBack} 
-          className="mb-6 p-2.5 rounded-2xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 shadow-sm hover:bg-purple-50 dark:hover:bg-slate-750 transition-all flex items-center gap-2 text-sm font-bold"
+          className="mb-6 p-2.5 rounded-2xl bg-white/20 backdrop-blur-md text-white border border-white/30 shadow-sm hover:bg-white/30 transition-all flex items-center gap-2 text-sm font-bold"
         >
-          <ArrowLeft className="w-4 h-4 text-slate-900" />
-          <span className="text-slate-900">Back</span>
+          <ArrowLeft className="w-4 h-4 text-white" />
+          <span>Back</span>
         </button>
         
         <div className="flex items-center gap-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-3 shadow-lg shadow-purple-200/50 dark:shadow-none border border-purple-100 dark:border-slate-700">
-            {role === 'player' && <User className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />}
-            {role === 'organization' && <Building2 className="w-8 h-8 text-purple-600 dark:text-purple-400" />}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-3 shadow-xl shadow-blue-900/20 border border-white/50">
+            {role === 'player' && <User className="w-8 h-8 text-blue-600 dark:text-blue-400" />}
+            {role === 'organization' && <Building2 className="w-8 h-8 text-green-600 dark:text-green-400" />}
           </div>
           <div>
-            <h1 className="text-slate-900 dark:text-white text-2xl font-black tracking-tight">Create Account</h1>
-            <p className="text-slate-600 dark:text-slate-400 text-sm font-bold">Step 2: {role.charAt(0).toUpperCase() + role.slice(1)} Details</p>
+            <h1 className="text-white text-2xl font-black tracking-tight">Create Account</h1>
+            <p className="text-white/80 text-sm font-bold">Step 2: {role.charAt(0).toUpperCase() + role.slice(1)} Details</p>
           </div>
         </div>
       </div>
 
-      <ScrollArea className="flex-1">
-        <div className="p-6 space-y-8 pb-32">
+      <ScrollArea className="flex-1 -mt-8">
+        <div className="px-6 space-y-8 pb-32">
           <form id="sign-up-form" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <input type="hidden" {...register('role')} />
             
-            {/* Basic Information Section */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider ml-1">Basic Information</h3>
+            {/* Basic Information Section - Card Style */}
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-slate-800 space-y-4">
+              <h3 className="text-sm font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider ml-1">Basic Information</h3>
               
               {role !== 'organization' && (
                 <div className="space-y-1.5">
                   <Label htmlFor="fullName" className="text-slate-700 dark:text-slate-300 font-bold ml-1">Full Name</Label>
                   <div className="relative group">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-600 group-focus-within:text-purple-600 transition-colors" />
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-600 group-focus-within:text-blue-600 transition-colors" />
                     <Input
                       id="fullName"
                       {...register('fullName')}
                       placeholder="Enter full name"
-                      className="pl-12 h-14 rounded-2xl border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 focus:bg-white dark:focus:bg-slate-900 focus:ring-purple-500 transition-all dark:text-white"
+                      className="pl-12 h-14 rounded-2xl border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 focus:bg-white dark:focus:bg-slate-900 focus:ring-blue-500 transition-all dark:text-white"
                     />
                   </div>
                 </div>
@@ -150,13 +150,13 @@ export function UnifiedSignUpScreen({ role, onSignUp, onBack }: UnifiedSignUpScr
               <div className="space-y-1.5">
                 <Label htmlFor="email" className="text-slate-700 dark:text-slate-300 font-bold ml-1">Email Address</Label>
                 <div className="relative group">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-600 group-focus-within:text-purple-600 transition-colors" />
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-600 group-focus-within:text-blue-600 transition-colors" />
                   <Input
                     id="email"
                     type="email"
                     {...register('email')}
                     placeholder="name@example.com"
-                    className="pl-12 h-14 rounded-2xl border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 focus:bg-white dark:focus:bg-slate-900 focus:ring-purple-500 transition-all dark:text-white"
+                    className="pl-12 h-14 rounded-2xl border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 focus:bg-white dark:focus:bg-slate-900 focus:ring-blue-500 transition-all dark:text-white"
                   />
                 </div>
               </div>
@@ -164,13 +164,13 @@ export function UnifiedSignUpScreen({ role, onSignUp, onBack }: UnifiedSignUpScr
               <div className="space-y-1.5">
                 <Label htmlFor="password" className="text-slate-700 dark:text-slate-300 font-bold ml-1">Password</Label>
                 <div className="relative group">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-600 group-focus-within:text-purple-600 transition-colors" />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-600 group-focus-within:text-blue-600 transition-colors" />
                   <Input
                     id="password"
                     type="password"
                     {...register('password')}
                     placeholder="••••••••"
-                    className="pl-12 h-14 rounded-2xl border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 focus:bg-white dark:focus:bg-slate-900 focus:ring-purple-500 transition-all dark:text-white"
+                    className="pl-12 h-14 rounded-2xl border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 focus:bg-white dark:focus:bg-slate-900 focus:ring-blue-500 transition-all dark:text-white"
                   />
                 </div>
               </div>
@@ -179,21 +179,21 @@ export function UnifiedSignUpScreen({ role, onSignUp, onBack }: UnifiedSignUpScr
                 <div className="space-y-1.5">
                   <Label htmlFor="dateOfBirth" className="text-slate-700 dark:text-slate-300 font-bold ml-1">Date of Birth</Label>
                   <div className="relative group">
-                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-600 group-focus-within:text-purple-600 transition-colors" />
+                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-600 group-focus-within:text-blue-600 transition-colors" />
                     <Input
                       id="dateOfBirth"
                       type="date"
                       {...register('dateOfBirth')}
-                      className="pl-12 h-14 rounded-2xl border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 focus:bg-white dark:focus:bg-slate-900 focus:ring-purple-500 transition-all dark:text-white [color-scheme:dark]"
+                      className="pl-12 h-14 rounded-2xl border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 focus:bg-white dark:focus:bg-slate-900 focus:ring-blue-500 transition-all dark:text-white [color-scheme:dark]"
                     />
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Role Specific Section */}
-            <div className="space-y-4 pt-2">
-              <h3 className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider ml-1">
+            {/* Role Specific Section - Card Style */}
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-slate-800 space-y-4 pt-4">
+              <h3 className="text-sm font-bold text-green-600 dark:text-green-400 uppercase tracking-wider ml-1">
                 {role.charAt(0).toUpperCase() + role.slice(1)} Details
               </h3>
 
@@ -202,7 +202,7 @@ export function UnifiedSignUpScreen({ role, onSignUp, onBack }: UnifiedSignUpScr
                   <div className="space-y-1.5">
                     <Label htmlFor="orgName" className="text-slate-700 dark:text-slate-300 font-bold ml-1">Organization Name</Label>
                     <div className="relative group">
-                      <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-600 group-focus-within:text-purple-600 transition-colors" />
+                      <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-600 group-focus-within:text-green-600 transition-colors" />
                       <Input
                         id="orgName"
                         {...register('orgName')}
@@ -215,7 +215,7 @@ export function UnifiedSignUpScreen({ role, onSignUp, onBack }: UnifiedSignUpScr
                   <div className="space-y-1.5">
                     <Label htmlFor="officialDesignation" className="text-slate-700 dark:text-slate-300 font-bold ml-1">Official Designation</Label>
                     <div className="relative group">
-                      <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-600 group-focus-within:text-purple-600 transition-colors" />
+                      <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-600 group-focus-within:text-green-600 transition-colors" />
                       <Input
                         id="officialDesignation"
                         {...register('officialDesignation')}
@@ -228,7 +228,7 @@ export function UnifiedSignUpScreen({ role, onSignUp, onBack }: UnifiedSignUpScr
                   <div className="space-y-1.5">
                     <Label htmlFor="businessAddress" className="text-slate-700 dark:text-slate-300 font-bold ml-1">Official Business Address</Label>
                     <div className="relative group">
-                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-600 group-focus-within:text-purple-600 transition-colors" />
+                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-600 group-focus-within:text-green-600 transition-colors" />
                       <Input
                         id="businessAddress"
                         {...register('businessAddress')}
@@ -252,7 +252,7 @@ export function UnifiedSignUpScreen({ role, onSignUp, onBack }: UnifiedSignUpScr
                           onClick={() => toggleItem('preferredSports', sport)}
                           className={`py-3.5 px-4 rounded-2xl border-2 transition-all flex items-center justify-center gap-2 ${
                             selectedSports.includes(sport)
-                              ? 'border-purple-600 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 shadow-sm'
+                              ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 shadow-sm'
                               : 'border-slate-100 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:border-slate-200 dark:hover:border-slate-700 bg-slate-50/50 dark:bg-slate-950/50'
                           }`}
                         >
@@ -272,7 +272,7 @@ export function UnifiedSignUpScreen({ role, onSignUp, onBack }: UnifiedSignUpScr
                           onClick={() => setValue('skillLevel', level, { shouldValidate: true })}
                           className={`py-3.5 rounded-2xl border-2 transition-all text-center ${
                             watch('skillLevel') === level
-                              ? 'border-purple-600 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-bold shadow-sm'
+                              ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-bold shadow-sm'
                               : 'border-slate-100 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:border-slate-200 dark:hover:border-slate-700 bg-slate-50/50 dark:bg-slate-950/50'
                           }`}
                         >
@@ -282,12 +282,12 @@ export function UnifiedSignUpScreen({ role, onSignUp, onBack }: UnifiedSignUpScr
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 p-4 bg-purple-50 dark:bg-purple-900/10 rounded-2xl border border-purple-100 dark:border-purple-900/30">
+                  <div className="flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-900/30">
                     <Checkbox
                       id="isPWD"
                       onCheckedChange={(checked) => setValue('isPWD', checked === true)}
                     />
-                    <label htmlFor="isPWD" className="text-sm text-purple-900 dark:text-purple-300 font-semibold cursor-pointer">
+                    <label htmlFor="isPWD" className="text-sm text-blue-900 dark:text-blue-300 font-semibold cursor-pointer">
                       I am a PWD (Person with Disability)
                     </label>
                   </div>
@@ -295,31 +295,17 @@ export function UnifiedSignUpScreen({ role, onSignUp, onBack }: UnifiedSignUpScr
               )}
             </div>
 
-            {role !== 'organization' && (
-              <div className="space-y-3 pt-4">
-                <Label className="text-slate-700 dark:text-slate-300 font-bold ml-1">{getIdLabel()}</Label>
-                <div className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl p-8 text-center bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors cursor-pointer group">
-                  <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-sm group-hover:scale-110 transition-transform">
-                    <ShieldCheck className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                  </div>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 font-bold">Tap to upload verification</p>
-                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">PDF, JPG or PNG (Max 5MB)</p>
-                </div>
-              </div>
-            )}
-
-            {/* Terms Checkbox */}
-            <div className="flex items-start gap-3 pt-4 px-1">
+            {/* Terms Section - Minimal Card */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-sm flex items-start gap-3">
               <Checkbox
                 id="agreedToTerms"
                 onCheckedChange={(checked) => setValue('agreedToTerms', checked === true, { shouldValidate: true })}
                 className="mt-1 border-slate-300 dark:border-slate-700"
               />
               <label htmlFor="agreedToTerms" className="text-xs text-slate-500 dark:text-slate-500 leading-relaxed font-medium">
-                By ticking this box, you agree to our <span className="text-purple-600 dark:text-purple-400 font-bold">Terms of Service</span> and <span className="text-purple-600 dark:text-purple-400 font-bold">Privacy Policy</span>.
+                By ticking this box, you agree to our <span className="text-blue-600 dark:text-blue-400 font-bold">Terms of Service</span> and <span className="text-blue-600 dark:text-blue-400 font-bold">Privacy Policy</span>.
               </label>
             </div>
-
           </form>
         </div>
       </ScrollArea>
@@ -329,7 +315,7 @@ export function UnifiedSignUpScreen({ role, onSignUp, onBack }: UnifiedSignUpScr
         <Button
           onClick={() => onSignUp(watch() as any)}
           type="button"
-          className="w-full h-15 bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 text-white font-bold text-lg rounded-2xl shadow-xl shadow-purple-200 dark:shadow-none transition-all flex items-center justify-center gap-2"
+          className="w-full h-15 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white font-bold text-lg rounded-2xl shadow-xl shadow-blue-200 dark:shadow-none transition-all flex items-center justify-center gap-2"
         >
           Create Account
           <ChevronRight className="w-6 h-6" />
