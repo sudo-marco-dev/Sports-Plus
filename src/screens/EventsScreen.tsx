@@ -195,6 +195,8 @@ const sportOptions = ['All', 'Basketball', 'Badminton', 'Football', 'Volleyball'
 
 interface EventsScreenProps {
   onBack?: () => void;
+  onJoinGame?: (gameId: string) => void;
+  onJoinTournament?: (tournamentId: string) => void;
 }
 
 export function EventsScreen({ onBack }: EventsScreenProps) {

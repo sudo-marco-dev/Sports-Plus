@@ -39,6 +39,7 @@ interface Team {
 
 interface LeaderboardScreenProps {
   onBack?: () => void;
+  isPublic?: boolean;
 }
 
 // Mock data
@@ -72,7 +73,7 @@ const sportEmojis: Record<string, string> = {
 
 const sportFilters = ['All', 'Basketball', 'Badminton', 'Football', 'Volleyball', 'Running', 'Cycling'];
 
-export function LeaderboardScreen({ onBack }: LeaderboardScreenProps) {
+export function LeaderboardScreen({ onBack, isPublic = false }: LeaderboardScreenProps) {
   const [activeEntity, setActiveEntity] = useState<'players' | 'teams'>('players');
   const [activePeriod, setActivePeriod] = useState<'alltime' | 'monthly'>('alltime');
   const [activeSport, setActiveSport] = useState<string>('All');
@@ -80,9 +81,9 @@ export function LeaderboardScreen({ onBack }: LeaderboardScreenProps) {
 
   // Filter and sort players
   const filteredPlayers = useMemo(() => {
-    let filtered = allPlayers.filter(p => p.role !== 'organization');
+    let filtered = allPlayers.filter((p: Player) => p.role !== 'organization');
     if (activeSport !== 'All') {
-      filtered = filtered.filter(p => p.sport === activeSport);
+      filtered = filtered.filter((p: Player) => p.sport === activeSport);
     }
     
     // Sort by selected category
@@ -99,12 +100,12 @@ export function LeaderboardScreen({ onBack }: LeaderboardScreenProps) {
   const filteredTeams = useMemo(() => {
     let filtered = allTeams;
     if (activeSport !== 'All') {
-      filtered = filtered.filter(t => t.sport === activeSport);
+      filtered = filtered.filter((t: Team) => t.sport === activeSport);
     }
     return filtered.sort((a, b) => b.wins - a.wins);
   }, [activeSport]);
 
-  const currentUser = allPlayers.find(p => p.isCurrentUser);
+  const currentUser = allPlayers.find((p: Player) => p.isCurrentUser);
 
   const getRankBadge = (rank: number) => {
     if (rank === 1) return { color: 'bg-yellow-400', text: 'text-yellow-900', icon: '👑' };
@@ -119,13 +120,13 @@ export function LeaderboardScreen({ onBack }: LeaderboardScreenProps) {
 
   const chartData = useMemo(() => {
     if (activeEntity === 'players') {
-      return filteredPlayers.slice(0, 5).map(p => ({
+      return filteredPlayers.slice(0, 5).map((p: Player) => ({
         name: p.name.split(' ')[0],
         value: activeCategory === 'mvps' ? p.mvps : p.wins,
         fullName: p.name,
       }));
     } else {
-      return filteredTeams.slice(0, 5).map(t => ({
+      return filteredTeams.slice(0, 5).map((t: Team) => ({
         name: t.name,
         value: t.wins,
         fullName: t.name,
@@ -135,11 +136,25 @@ export function LeaderboardScreen({ onBack }: LeaderboardScreenProps) {
 
   return (
     <div className="h-screen w-full max-w-md mx-auto bg-gradient-to-br from-blue-50 to-green-50 flex flex-col pb-20">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-teal-600 to-blue-600 px-6 pt-10 pb-6 shadow-lg">
-        <div className="flex items-center justify-center mb-4 gap-2">
-          <Trophy className="size-7 text-yellow-300" />
-          <h1 className="text-white text-2xl font-bold">Rankings</h1>
+      <div className="bg-gradient-to-r from-teal-600 to-blue-600 px-6 pt-10 pb-6 shadow-lg relative">
+        {isPublic && onBack && (
+          <button 
+            onClick={onBack}
+            className="absolute top-10 left-4 text-white p-2 rounded-full hover:bg-white/20 transition-colors"
+          >
+            ← Back
+          </button>
+        )}
+        <div className="flex flex-col items-center justify-center mb-2 gap-2">
+          {isPublic && (
+            <div className="mt-2 text-white/90 text-sm font-semibold tracking-wider uppercase flex items-center gap-1.5">
+              <BarChart3 className="w-4 h-4" /> Scout Mode
+            </div>
+          )}
+          <div className="flex items-center gap-2">
+            <Trophy className="size-7 text-yellow-300" />
+            <h1 className="text-white text-2xl font-bold">Rankings</h1>
+          </div>
         </div>
       </div>
 
@@ -159,7 +174,7 @@ export function LeaderboardScreen({ onBack }: LeaderboardScreenProps) {
         </div>
         <div className="space-y-1.5">
           <Label className="text-xs font-semibold text-gray-500 ml-1">Sport</Label>
-          <Select value={activeSport} onValueChange={(v) => setActiveSport(v)}>
+          <Select value={activeSport} onValueChange={(v: string) => setActiveSport(v)}>
             <SelectTrigger className="bg-white border-gray-200 rounded-xl h-10 shadow-sm">
               <SelectValue placeholder="Select sport" />
             </SelectTrigger>
@@ -200,7 +215,7 @@ export function LeaderboardScreen({ onBack }: LeaderboardScreenProps) {
                 <YAxis hide />
                 <Tooltip 
                   cursor={{ fill: '#f3f4f6', radius: 8 }}
-                  content={({ active, payload }) => {
+                  content={({ active, payload }: any) => {
                     if (active && payload && payload.length) {
                       return (
                         <div className="bg-white p-2 border border-gray-100 shadow-xl rounded-lg text-xs">
@@ -213,7 +228,7 @@ export function LeaderboardScreen({ onBack }: LeaderboardScreenProps) {
                   }}
                 />
                 <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={28}>
-                  {chartData.map((entry, index) => (
+                  {chartData.map((entry: any, index: number) => (
                     <Cell key={`cell-${index}`} fill={index === 0 ? '#2563eb' : index === 1 ? '#3b82f6' : index === 2 ? '#60a5fa' : '#93c5fd'} />
                   ))}
                 </Bar>
@@ -274,7 +289,7 @@ export function LeaderboardScreen({ onBack }: LeaderboardScreenProps) {
       )}
 
       {/* Your Rank Banner */}
-      {currentUser && activeEntity === 'players' && (
+      {!isPublic && currentUser && activeEntity === 'players' && (
         <div className="mx-4 my-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl p-4 shadow-md">
           <p className="text-center font-semibold text-sm">
             Your Rank: <span className="text-lg font-bold">#{currentUser.rank}</span> · {currentUser.mvps} MVPs · {currentUser.wins} Wins · {currentUser.points} pts
@@ -288,7 +303,7 @@ export function LeaderboardScreen({ onBack }: LeaderboardScreenProps) {
         {activeEntity === 'players' && (
           <>
             {/* Top 3 - Podium Cards */}
-            {filteredPlayers.slice(0, 3).map((player, idx) => {
+            {filteredPlayers.slice(0, 3).map((player: Player, idx: number) => {
               const badge = getRankBadge(player.rank);
               const stat = activeCategory === 'mvps' ? player.mvps : player.wins;
               const statLabel = activeCategory === 'mvps' ? 'MVPs' : 'Wins';
@@ -340,7 +355,7 @@ export function LeaderboardScreen({ onBack }: LeaderboardScreenProps) {
             })}
 
             {/* Ranks 4+ - Compact Rows */}
-            {filteredPlayers.slice(3).map((player) => {
+            {filteredPlayers.slice(3).map((player: Player) => {
               const stat = activeCategory === 'mvps' ? player.mvps : player.wins;
               const isCurrentUser = player.isCurrentUser;
 
@@ -379,7 +394,7 @@ export function LeaderboardScreen({ onBack }: LeaderboardScreenProps) {
         {/* Team Rankings */}
         {activeEntity === 'teams' && (
           <>
-            {filteredTeams.map((team, idx) => {
+            {filteredTeams.map((team: Team, idx: number) => {
               const badge = getRankBadge(idx + 1);
               return (
                 <div
@@ -412,6 +427,29 @@ export function LeaderboardScreen({ onBack }: LeaderboardScreenProps) {
           <div className="text-center py-12">
             <Trophy className="size-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500 text-sm">No rankings found for selected filter</p>
+          </div>
+        )}
+
+        {isPublic && (
+          <div className="mt-8 mb-4">
+            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 text-center text-white shadow-xl relative overflow-hidden">
+              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+              <h3 className="text-xl font-bold mb-2 relative z-10">Want to join the leaderboard?</h3>
+              <p className="text-indigo-100 text-sm mb-6 relative z-10">
+                Join your local sports community, play games, and earn points to climb the ranks.
+              </p>
+              <button 
+                onClick={() => {
+                   window.location.hash = '#signup';
+                   window.location.reload(); 
+                   // Ideally we'd use a prop for this, but since we are handling links natively in App.tsx via hash right now
+                }}
+                className="w-full bg-white text-indigo-700 font-bold py-3 px-4 rounded-xl shadow-lg transition-transform hover:scale-105 active:scale-95 relative z-10 flex items-center justify-center gap-2"
+              >
+                <UsersIcon className="w-5 h-5" />
+                Join the Community
+              </button>
+            </div>
           </div>
         )}
       </div>

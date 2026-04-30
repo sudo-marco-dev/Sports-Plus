@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Bell } from 'lucide-react';
+import { Bell, Trophy } from 'lucide-react';
 import { usePermissions } from './hooks/usePermissions';
 import { SplashScreen } from './components/SplashScreen';
 import { OnboardingScreen } from './components/OnboardingScreen';
@@ -36,9 +36,12 @@ import { OrgDashboard } from './components/org/OrgDashboard';
 import { OrgPortal } from './components/org/OrgPortal';
 import { BottomNavigation } from './components/BottomNavigation';
 import { NotificationPanel } from './components/NotificationPanel';
+import { LandingPage } from './components/LandingPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { mockGames, mockUsers } from './data/mockData';
 import { Toaster, toast } from 'sonner';
+import { RoleSelectionScreen, UserRole } from './components/RoleSelectionScreen';
+import { UnifiedSignUpScreen } from './components/UnifiedSignUpScreen';
 
 type AppScreen = 
   | 'splash'
@@ -73,7 +76,12 @@ type AppScreen =
   | 'post-game-summary'
   | 'participant-feedback'
   | 'org-dashboard'
-  | 'org-portal';
+  | 'org-portal'
+  | 'landing'
+  | 'scout-mode'
+  | 'role-selection'
+  | 'unified-signup'
+  | 'coach-dashboard';
 
 export function AppContent() {
   const { currentUser, unreadCount, addNotification } = useAuth();
@@ -82,6 +90,7 @@ export function AppContent() {
   const [currentScreen, setCurrentScreen] = useState<AppScreen>('splash');
   const [activeTab, setActiveTab] = useState('home');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [userData, setUserData] = useState({
     name: 'John Doe',
     username: 'johndoe',
@@ -118,8 +127,10 @@ export function AppContent() {
     if (currentScreen === 'splash') {
       // Deep link: skip to a specific screen via URL hash (e.g. /#org-dashboard)
       const hash = window.location.hash.replace('#', '') as AppScreen;
-      if (hash === 'org-dashboard' || hash === 'org-portal') {
-        setIsAuthenticated(true);
+      if (['org-dashboard', 'org-portal', 'landing', 'scout-mode'].includes(hash)) {
+        if (hash === 'org-dashboard' || hash === 'org-portal') {
+          setIsAuthenticated(true);
+        }
         setCurrentScreen(hash);
         return;
       }
@@ -138,23 +149,36 @@ export function AppContent() {
   };
 
   const handleSignUp = (signUpData: any) => {
+    const role = signUpData.role || 'player';
     setUserData({
       name: signUpData.fullName,
-      username: signUpData.username,
+      username: signUpData.fullName.toLowerCase().replace(/\s+/g, ''),
       userId: 'SP2025-' + Math.floor(Math.random() * 10000),
-      isVerified: signUpData.isVerified,
+      isVerified: true,
       reliabilityScore: 100,
       points: 0,
       rating: 0,
       gamesPlayed: 0,
-      teamName: null,
+      teamName: '',
       gamesCreatedToday: 0,
       gamesCreatedThisWeek: 0,
     });
     setIsAuthenticated(true);
-    setCurrentScreen('home');
-    setActiveTab('home');
-    toast.success('Account created successfully!');
+    
+    // Role-based redirection
+    if (role === 'organization') {
+      setCurrentScreen('org-portal');
+      setActiveTab('home');
+      toast.success('Organization registered successfully! Welcome to the portal.');
+    } else if (role === 'coach') {
+      setCurrentScreen('coach-dashboard');
+      setActiveTab('home');
+      toast.success('Coach profile created! Welcome to your dashboard.');
+    } else {
+      setCurrentScreen('home');
+      setActiveTab('home');
+      toast.success('Welcome to SportsPlus!');
+    }
   };
 
   const handleSignOut = () => {
@@ -202,7 +226,7 @@ export function AppContent() {
 
   const handleJoinGame = (gameId: string) => {
     if (joinedGames.includes(gameId)) {
-      setJoinedGames(prev => prev.filter(id => id !== gameId));
+      setJoinedGames((prev: string[]) => prev.filter((id: string) => id !== gameId));
       toast.info('Left game');
     } else {
       // Only allow joining one game at a time
@@ -258,7 +282,7 @@ export function AppContent() {
   };
 
   const handleRemoveJoinedGame = (gameId: string) => {
-    setJoinedGames(prev => prev.filter(id => id !== gameId));
+    setJoinedGames((prev: string[]) => prev.filter((id: string) => id !== gameId));
     setJoinedGameData(null);
     setSelectedGameId(null);
     toast.info('You have left the game');
@@ -275,8 +299,8 @@ export function AppContent() {
       verificationStatus: 'pending' as const,
       confirmations: 0,
     };
-    setMyGames(prev => [...prev, newGame]);
-    setUserData(prev => ({
+    setMyGames((prev: any[]) => [...prev, newGame]);
+    setUserData((prev: any) => ({
       ...prev,
       gamesCreatedToday: prev.gamesCreatedToday + 1,
       gamesCreatedThisWeek: prev.gamesCreatedThisWeek + 1,
@@ -323,7 +347,7 @@ export function AppContent() {
 
   const handleGameCancel = () => {
     if (selectedGameId) {
-      setMyGames(prev => prev.filter(g => g.id !== selectedGameId));
+      setMyGames((prev: any[]) => prev.filter((g: any) => g.id !== selectedGameId));
     }
     setCreatedGameData(null);
     setCurrentScreen('home');
@@ -333,13 +357,13 @@ export function AppContent() {
 
   const handlePostGameComplete = () => {
     if (selectedGameId) {
-      setMyGames(prev => prev.filter(g => g.id !== selectedGameId));
+      setMyGames((prev: any[]) => prev.filter((g: any) => g.id !== selectedGameId));
     }
     setCreatedGameData(null);
     setCurrentScreen('history');
     setActiveTab('home');
     if (!isOrganization) {
-      setUserData(prev => ({
+      setUserData((prev: any) => ({
         ...prev,
         points: prev.points + 100,
         gamesPlayed: prev.gamesPlayed + 1,
@@ -364,7 +388,7 @@ export function AppContent() {
     setCurrentScreen('history');
     setActiveTab('home');
     if (!isOrganization) {
-      setUserData(prev => ({
+      setUserData((prev: any) => ({
         ...prev,
         points: prev.points + 50,
         gamesPlayed: prev.gamesPlayed + 1,
@@ -376,7 +400,7 @@ export function AppContent() {
   };
 
   const handleVerifyAccount = () => {
-    setUserData(prev => ({ ...prev, isVerified: true }));
+    setUserData((prev: any) => ({ ...prev, isVerified: true }));
     toast.success('Account verified successfully! You can now create games.');
   };
 
@@ -448,6 +472,53 @@ export function AppContent() {
         <SplashScreen onComplete={() => setCurrentScreen('onboarding')} />
       )}
 
+      {currentScreen === 'landing' && (
+        <LandingPage 
+          onGetStarted={() => {
+            window.location.hash = '#role-selection';
+            setCurrentScreen('role-selection');
+          }}
+          onSignIn={() => {
+            window.location.hash = '';
+            setCurrentScreen('login');
+          }}
+          onScoutMode={() => {
+            window.location.hash = '#scout-mode';
+            setCurrentScreen('scout-mode');
+          }}
+        />
+      )}
+
+      {currentScreen === 'role-selection' && (
+        <RoleSelectionScreen 
+          onSelect={(role) => {
+            setSelectedRole(role);
+            setCurrentScreen('unified-signup');
+          }}
+          onBack={() => {
+            setCurrentScreen('landing');
+          }}
+        />
+      )}
+
+      {currentScreen === 'unified-signup' && selectedRole && (
+        <UnifiedSignUpScreen 
+          role={selectedRole}
+          onSignUp={handleSignUp}
+          onBack={() => setCurrentScreen('role-selection')}
+        />
+      )}
+
+      {currentScreen === 'scout-mode' && (
+        <LeaderboardScreen 
+          isPublic={true}
+          onBack={() => {
+            window.location.hash = '#landing';
+            setCurrentScreen('landing');
+          }} 
+        />
+      )}
+
       {currentScreen === 'onboarding' && (
         <OnboardingScreen onComplete={() => setCurrentScreen('login')} />
       )}
@@ -455,17 +526,12 @@ export function AppContent() {
       {currentScreen === 'login' && (
         <LoginScreen
           onLogin={handleLogin}
-          onSignUp={() => setCurrentScreen('signup')}
+          onSignUp={() => setCurrentScreen('role-selection')}
           onForgotPassword={() => setCurrentScreen('forgot-password')}
         />
       )}
 
-      {currentScreen === 'signup' && (
-        <SignUpScreen
-          onSignUp={handleSignUp}
-          onBack={() => setCurrentScreen('login')}
-        />
-      )}
+
 
       {currentScreen === 'forgot-password' && (
         <ForgotPasswordScreen
@@ -550,7 +616,7 @@ export function AppContent() {
             setActiveTab('home');
           }}
           onJoinGame={handleJoinGame}
-          onJoinTournament={(tournamentId) => {
+          onJoinTournament={(tournamentId: string) => {
             setSelectedTournamentId(tournamentId);
             setCurrentScreen('tournament-detail');
           }}
@@ -590,13 +656,37 @@ export function AppContent() {
             setCurrentScreen('home');
             setActiveTab('home');
           }}
-          onViewTeam={(teamId) => {
+          onViewTeam={(teamId: string) => {
             setSelectedTeamId(teamId);
             setCurrentScreen('team-detail');
           }}
           joinedGameData={joinedGameData} 
           createdGameData={createdGameData}
         />
+      )}
+
+      {currentScreen === 'coach-dashboard' && (
+        <div className="flex-1 flex flex-col">
+          <div className="bg-white p-6 border-b border-slate-100 flex items-center justify-between">
+            <h1 className="text-xl font-bold text-slate-900 tracking-tight">Coach Dashboard</h1>
+            <button onClick={() => setCurrentScreen('home')} className="text-xs text-purple-600 font-bold uppercase tracking-wider">Home</button>
+          </div>
+          <div className="flex-1 p-6 bg-slate-50 flex flex-col items-center justify-center text-center space-y-4">
+             <div className="w-20 h-20 bg-purple-100 rounded-3xl flex items-center justify-center text-purple-600 shadow-inner">
+               <Trophy className="w-10 h-10" />
+             </div>
+             <div>
+               <h2 className="text-lg font-bold text-slate-800">Welcome, Coach {userData.name}!</h2>
+               <p className="text-sm text-slate-500 max-w-[200px] mx-auto mt-2">Your dashboard is being initialized with player analytics and team management tools.</p>
+             </div>
+             <button 
+               onClick={() => setCurrentScreen('leaderboard')}
+               className="px-6 py-3 bg-purple-600 text-white rounded-2xl font-bold text-sm shadow-xl shadow-purple-200"
+             >
+               View Leaderboards
+             </button>
+          </div>
+        </div>
       )}
 
       {currentScreen === 'team-detail' && selectedTeamId && (

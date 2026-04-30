@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 
 interface CreateGameScreenProps {
   onCreateGame: (gameData: any) => void;
+  isVerified?: boolean;
   gamesCreatedToday?: number;
   gamesCreatedThisWeek?: number;
 }
@@ -183,7 +184,7 @@ export function CreateGameScreen({
 
             <div className="space-y-2">
               <Label className="text-gray-700">Sport Type</Label>
-              <Select value={formData.sport} onValueChange={(value) => setFormData({ ...formData, sport: value })}>
+              <Select value={formData.sport} onValueChange={(value: string) => setFormData({ ...formData, sport: value })}>
                 <SelectTrigger className="h-12 rounded-xl border-gray-200 bg-gray-50">
                   <SelectValue placeholder="Select sport" />
                 </SelectTrigger>
@@ -245,7 +246,7 @@ export function CreateGameScreen({
 
             <div className="space-y-2">
               <Label className="text-gray-700">Location</Label>
-              <Select value={formData.location} onValueChange={(value) => setFormData({ ...formData, location: value })}>
+              <Select value={formData.location} onValueChange={(value: string) => setFormData({ ...formData, location: value })}>
                 <SelectTrigger className="h-12 rounded-xl border-gray-200 bg-gray-50">
                   <SelectValue placeholder="Select barangay" />
                 </SelectTrigger>

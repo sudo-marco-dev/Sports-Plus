@@ -17,6 +17,8 @@ import { toast } from 'sonner';
 interface TeamsScreenProps {
   onBack?: () => void;
   onViewTeam?: (teamId: string) => void;
+  joinedGameData?: any;
+  createdGameData?: any;
 }
 
 const mockTeamMembers = [

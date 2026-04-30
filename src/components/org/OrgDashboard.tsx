@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Building2, Calendar, Plus, Users, ArrowLeft, Activity, MapPin, Trophy, BarChart3, TrendingUp, Target } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { ScrollArea } from '../ui/scroll-area';
@@ -14,6 +13,7 @@ interface OrgDashboardProps {
   onBack: () => void;
   orgName?: string;
   isEmbedded?: boolean;
+  onCreateEvent?: () => void;
 }
 
 interface LiveEvent {
@@ -32,7 +32,7 @@ const sportEmojis: Record<string, string> = {
   Volleyball: '🏐', Tennis: '🎾', Swimming: '🏊',
 };
 
-const mockLiveEvents: LiveEvent[] = [
+export const mockLiveEvents: LiveEvent[] = [
   {
     id: 'le1', title: 'Metro Manila Basketball Cup 2026', sport: 'Basketball',
     date: 'Apr 20, 2026', venue: 'Rizal Memorial Coliseum',
@@ -50,7 +50,7 @@ const mockLiveEvents: LiveEvent[] = [
   },
 ];
 
-export function OrgDashboard({ onBack, orgName = 'Rico Tan Sports', isEmbedded = false }: OrgDashboardProps) {
+export function OrgDashboard({ onBack, orgName = 'Rico Tan Sports', isEmbedded = false, onCreateEvent }: OrgDashboardProps) {
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
 
   const getStatusColor = (status: LiveEvent['status']) => {
@@ -79,9 +79,9 @@ export function OrgDashboard({ onBack, orgName = 'Rico Tan Sports', isEmbedded =
   const COLORS = ['#8b5cf6', '#e5e7eb']; // Purple and Gray
 
   return (
-    <div className={`${isEmbedded ? 'flex-1' : 'h-screen'} w-full max-w-md mx-auto bg-gray-50 flex flex-col ${isEmbedded ? 'pb-24' : 'pb-32'}`}>
+    <div className={`${isEmbedded ? 'flex-1' : 'h-[100dvh]'} w-full max-w-md mx-auto bg-gray-50 flex flex-col relative`}>
       {/* Header */}
-      <div className="bg-gradient-to-br from-purple-700 via-purple-600 to-blue-600 pt-8 pb-6 px-6 rounded-b-3xl shadow-lg">
+      <div className="sticky top-0 z-40 bg-gradient-to-br from-purple-700 via-purple-600 to-blue-600 pt-8 pb-6 px-6 rounded-b-3xl shadow-lg shrink-0">
         <div className="flex items-center gap-3 mb-4">
           <button onClick={onBack}
             className="bg-white/20 hover:bg-white/30 transition-colors p-2 rounded-lg text-white">
@@ -116,7 +116,7 @@ export function OrgDashboard({ onBack, orgName = 'Rico Tan Sports', isEmbedded =
         </div>
 
         {/* Analytics Performance Card - Mini */}
-        <div className="bg-white rounded-2xl p-4 shadow-xl flex items-center gap-4">
+        <div className="bg-white rounded-2xl p-4 shadow-xl flex items-center gap-4 border border-purple-100">
           <div className="relative size-20 flex-shrink-0">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -130,7 +130,7 @@ export function OrgDashboard({ onBack, orgName = 'Rico Tan Sports', isEmbedded =
                   dataKey="value"
                   stroke="none"
                 >
-                  {fillingData.map((entry, index) => (
+                  {fillingData.map((entry: any, index: number) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
@@ -145,7 +145,7 @@ export function OrgDashboard({ onBack, orgName = 'Rico Tan Sports', isEmbedded =
               <TrendingUp className="size-3.5 text-green-500" />
               Event Capacity
             </h3>
-            <p className="text-[11px] text-gray-500 mb-2">Aggregate fill rate across events</p>
+            <p className="text-[11px] text-gray-500 mb-2">Clulster fill rate across events</p>
             <div className="flex items-center gap-3">
               <div>
                 <p className="text-xs font-bold text-gray-900">{totalApplicants}</p>
@@ -161,95 +161,86 @@ export function OrgDashboard({ onBack, orgName = 'Rico Tan Sports', isEmbedded =
         </div>
       </div>
 
-      {/* Tabs Navigation */}
-      <div className="px-4 -mt-4 relative z-10">
-        <Tabs defaultValue="live" className="w-full">
-          <TabsList className="w-full bg-white shadow-md rounded-2xl h-12 p-1">
-            <TabsTrigger value="live" className="flex-1 rounded-xl data-[state=active]:bg-purple-600 data-[state=active]:text-white font-semibold text-sm">
-              <Calendar className="w-4 h-4 mr-1.5" /> Live Events
-            </TabsTrigger>
-            <TabsTrigger value="create" className="flex-1 rounded-xl data-[state=active]:bg-purple-600 data-[state=active]:text-white font-semibold text-sm">
-              <Plus className="w-4 h-4 mr-1.5" /> Create New
-            </TabsTrigger>
-          </TabsList>
+      {/* Live Events Section */}
+      <div className="px-4 relative flex-1 flex flex-col pb-24">
+        {/* Sticky Sub-Header */}
+        <div className="sticky top-0 z-30 w-full bg-white/80 backdrop-blur-xl shadow-sm border-b border-gray-100 rounded-2xl p-4 flex items-center justify-between my-4">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-purple-600" />
+            <h2 className="font-bold text-gray-900">Live Events</h2>
+          </div>
+          {onCreateEvent && (
+            <Button onClick={onCreateEvent} size="sm" className="bg-gradient-to-br from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white rounded-xl h-8 text-xs px-3 shadow-md">
+              <Plus className="w-4 h-4 mr-1" /> Create
+            </Button>
+          )}
+        </div>
 
-          {/* Live Events Tab */}
-          <TabsContent value="live">
-            <ScrollArea className="mt-4" style={{ height: 'calc(100vh - 400px)' }}>
-              {selectedEvent ? (
-                <div className="space-y-4">
-                  <button onClick={() => setSelectedEvent(null)}
-                    className="flex items-center gap-2 text-sm text-purple-600 font-semibold hover:text-purple-700">
-                    <ArrowLeft className="w-4 h-4" /> Back to Events
-                  </button>
-                  <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm mb-3">
-                    <h3 className="font-bold text-gray-900 mb-1">
-                      {mockLiveEvents.find(e => e.id === selectedEvent)?.title}
-                    </h3>
-                    <p className="text-xs text-gray-500 mb-3">Manage applications for this event</p>
-                  </div>
-                  <ApplicantTriage />
-                </div>
-              ) : (
-                <div className="space-y-3 pb-4">
-                  {mockLiveEvents.map((event) => (
-                    <button key={event.id}
-                      onClick={() => setSelectedEvent(event.id)}
-                      className="w-full bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-left hover:shadow-md transition-shadow">
-                      <div className="flex items-start gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center text-2xl flex-shrink-0">
-                          {sportEmojis[event.sport] || '🎯'}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-2 mb-1">
-                            <h3 className="font-bold text-gray-900 text-sm truncate">{event.title}</h3>
-                            <Badge className={`${getStatusColor(event.status)} text-xs flex-shrink-0`}>
-                              {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
-                            <Calendar className="w-3 h-3" />
-                            <span>{event.date}</span>
-                            <span>•</span>
-                            <MapPin className="w-3 h-3" />
-                            <span className="truncate">{event.venue}</span>
-                          </div>
-                          {/* Applicant progress bar */}
-                          <div className="flex items-center gap-2">
-                            <div className="flex-1 bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                              <div className="bg-gradient-to-r from-purple-500 to-blue-500 h-full rounded-full transition-all"
-                                style={{ width: `${(event.applicants / event.maxPlayers) * 100}%` }} />
-                            </div>
-                            <span className="text-xs text-gray-600 font-medium flex-shrink-0">
-                              {event.applicants}/{event.maxPlayers}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-
-                  {mockLiveEvents.length === 0 && (
-                    <div className="text-center py-12">
-                      <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                      <p className="text-gray-500 font-semibold">No events yet</p>
-                      <p className="text-gray-400 text-sm mt-1">Create your first event to get started</p>
+        {/* Scrollable Container for Event Cards */}
+        <div className="flex-1 overflow-y-auto z-10 w-full">
+          {selectedEvent ? (
+            <div className="space-y-5 px-1">
+              <button onClick={() => setSelectedEvent(null)}
+                className="flex items-center gap-2 text-sm text-purple-600 font-semibold hover:text-purple-700">
+                <ArrowLeft className="w-4 h-4" /> Back to Events
+              </button>
+              <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm mb-3">
+                <h3 className="font-bold text-gray-900 mb-1">
+                  {mockLiveEvents.find(e => e.id === selectedEvent)?.title}
+                </h3>
+                <p className="text-xs text-gray-500 mb-3">Manage applications for this event</p>
+              </div>
+              <ApplicantTriage />
+            </div>
+          ) : (
+            <div className="space-y-5 px-1 pb-4">
+              {mockLiveEvents.map((event) => (
+                <button key={event.id}
+                  onClick={() => setSelectedEvent(event.id)}
+                  className="w-full bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-left hover:shadow-md transition-shadow">
+                  <div className="flex items-start gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center text-2xl flex-shrink-0">
+                      {sportEmojis[event.sport] || '🎯'}
                     </div>
-                  )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <h3 className="font-bold text-gray-900 text-sm truncate">{event.title}</h3>
+                        <Badge className={`${getStatusColor(event.status)} text-xs flex-shrink-0 border-none`}>
+                          {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
+                        <Calendar className="w-3 h-3" />
+                        <span>{event.date}</span>
+                        <span>•</span>
+                        <MapPin className="w-3 h-3" />
+                        <span className="truncate">{event.venue}</span>
+                      </div>
+                      {/* Applicant progress bar */}
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                          <div className="bg-gradient-to-r from-purple-500 to-blue-500 h-full rounded-full transition-all"
+                            style={{ width: `${(event.applicants / event.maxPlayers) * 100}%` }} />
+                        </div>
+                        <span className="text-xs text-gray-600 font-medium flex-shrink-0">
+                          {event.applicants}/{event.maxPlayers}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              ))}
+
+              {mockLiveEvents.length === 0 && (
+                <div className="text-center py-12">
+                  <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500 font-semibold">No events yet</p>
+                  <p className="text-gray-400 text-sm mt-1">Create your first event to get started</p>
                 </div>
               )}
-            </ScrollArea>
-          </TabsContent>
-
-          {/* Create New Tab */}
-          <TabsContent value="create">
-            <ScrollArea className="mt-4" style={{ height: 'calc(100vh - 400px)' }}>
-              <div className="bg-white rounded-3xl shadow-lg p-5 mb-4">
-                <EventCreationForm onSubmit={handleEventCreate} />
-              </div>
-            </ScrollArea>
-          </TabsContent>
-        </Tabs>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
