@@ -8,12 +8,14 @@ import { ScrollArea } from '../ui/scroll-area';
 import { toast } from 'sonner';
 import { EventCreationForm } from './EventCreationForm';
 import { ApplicantTriage } from './ApplicantTriage';
+import { useSubscriptionLimits } from '../../hooks/useSubscriptionLimits';
 
 interface OrgDashboardProps {
   onBack: () => void;
   orgName?: string;
   isEmbedded?: boolean;
   onCreateEvent?: () => void;
+  onUpgrade?: () => void;
 }
 
 interface LiveEvent {
@@ -50,8 +52,9 @@ export const mockLiveEvents: LiveEvent[] = [
   },
 ];
 
-export function OrgDashboard({ onBack, orgName = 'Rico Tan Sports', isEmbedded = false, onCreateEvent }: OrgDashboardProps) {
+export function OrgDashboard({ onBack, orgName = 'Rico Tan Sports', isEmbedded = false, onCreateEvent, onUpgrade }: OrgDashboardProps) {
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
+  const { limit, count } = useSubscriptionLimits();
 
   const getStatusColor = (status: LiveEvent['status']) => {
     switch (status) {
@@ -170,9 +173,16 @@ export function OrgDashboard({ onBack, orgName = 'Rico Tan Sports', isEmbedded =
             <h2 className="font-bold text-gray-900">Live Events</h2>
           </div>
           {onCreateEvent && (
-            <Button onClick={onCreateEvent} size="sm" className="bg-gradient-to-br from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white rounded-xl h-8 text-xs px-3 shadow-md">
-              <Plus className="w-4 h-4 mr-1" /> Create
-            </Button>
+            <div className="flex flex-col items-center gap-1">
+              <Button onClick={onCreateEvent} size="sm" className="bg-gradient-to-br from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white rounded-xl h-8 text-xs px-3 shadow-md">
+                <Plus className="w-4 h-4 mr-1" /> Create
+              </Button>
+              {limit && (
+                <p className="text-[9px] font-medium text-amber-600 whitespace-nowrap">
+                  Free Limit Reached ({count}/{limit})
+                </p>
+              )}
+            </div>
           )}
         </div>
 

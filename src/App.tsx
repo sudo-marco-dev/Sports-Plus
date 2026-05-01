@@ -129,6 +129,8 @@ export function AppContent() {
       if (['org-dashboard', 'org-portal', 'landing', 'scout-mode', 'signup'].includes(hash)) {
         if (hash === 'org-dashboard' || hash === 'org-portal') {
           setIsAuthenticated(true);
+          // Set user as FREE org for demo purposes so subscription limits work
+          updateUser({ role: 'organization', accountType: 'organization', subscriptionTier: 'FREE' });
         }
         setCurrentScreen(hash);
         return;
@@ -614,6 +616,7 @@ export function AppContent() {
             setCurrentScreen('home');
             setActiveTab('home');
           }}
+          onUpgrade={() => setCurrentScreen('SubscriptionScreen')}
         />
       )}
 
@@ -623,6 +626,7 @@ export function AppContent() {
             setCurrentScreen('home');
             setActiveTab('home');
           }}
+          onUpgrade={() => setCurrentScreen('SubscriptionScreen')}
         />
       )}
 

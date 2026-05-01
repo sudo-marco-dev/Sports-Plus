@@ -232,7 +232,7 @@ export const mockUsers: User[] = [
     waiverAccepted: true,
     certificates: [],
     mySchedules: [],
-    subscriptionTier: 'PREMIUM',
+    subscriptionTier: 'FREE',
     subscriptionExpiry: '2027-01-15',
   },
   {
@@ -692,7 +692,7 @@ export const mockNotifications: Notification[] = [
 // CURRENT LOGGED IN USER
 // ============================================================================
 
-export const mockCurrentUser: User = mockUsers[0]; // Marco Reyes (u1) - Player
+export const mockCurrentUser: User = mockUsers[4]; // Rico Tan (u5) - Organization (FREE for testing limits)
 
 // ============================================================================
 // HELPER FUNCTIONS

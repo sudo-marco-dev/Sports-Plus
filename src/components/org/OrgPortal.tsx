@@ -29,9 +29,13 @@ import { Input } from '../ui/input';
 import { OrgDashboard, mockLiveEvents } from './OrgDashboard';
 import { EventCreationForm } from './EventCreationForm';
 
+import { LimitReachedDialog } from '../ui/LimitReachedDialog';
+import { useSubscriptionLimits } from '../../hooks/useSubscriptionLimits';
+
 interface OrgPortalProps {
   onBack: () => void;
   orgName?: string;
+  onUpgrade?: () => void;
 }
 
 const COLORS = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b'];
@@ -43,9 +47,19 @@ const eventStats = [
   { name: 'Football', value: 10 },
 ];
 
-export function OrgPortal({ onBack, orgName = 'Rico Tan Sports' }: OrgPortalProps) {
+export function OrgPortal({ onBack, orgName = 'Rico Tan Sports', onUpgrade }: OrgPortalProps) {
   const [activeTab, setActiveTab] = useState<'home' | 'events' | 'settings' | 'create-event'>('home');
   const [settingsView, setSettingsView] = useState<'main' | 'details' | 'notifications'>('main');
+  const [showLimitDialog, setShowLimitDialog] = useState(false);
+  const { canCreate, count, limit } = useSubscriptionLimits();
+
+  const handleCreateEventClick = () => {
+    if (canCreate) {
+      setActiveTab('create-event');
+    } else {
+      setShowLimitDialog(true);
+    }
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -71,9 +85,9 @@ export function OrgPortal({ onBack, orgName = 'Rico Tan Sports' }: OrgPortalProp
               </div>
 
               {/* Quick Actions */}
-              <div className="grid grid-cols-2 gap-3 mb-6">
+              <div className="grid grid-cols-2 gap-3 mb-2">
                 <Button 
-                  onClick={() => setActiveTab('create-event')}
+                  onClick={handleCreateEventClick}
                   className="h-24 rounded-3xl bg-gradient-to-br from-blue-600 via-blue-700 to-green-600 flex flex-col items-center justify-center gap-2 shadow-lg shadow-blue-900/20"
                 >
                   <Plus className="size-6 text-white" />
@@ -87,6 +101,11 @@ export function OrgPortal({ onBack, orgName = 'Rico Tan Sports' }: OrgPortalProp
                   <span className="font-semibold text-blue-700">Applicants</span>
                 </Button>
               </div>
+              {limit && (
+                <p className="text-xs font-medium text-amber-600 text-center mb-4">
+                  Free Limit Reached ({count}/{limit})
+                </p>
+              )}
             </div>
 
             {/* Active Events Carousel-like List */}
@@ -127,7 +146,7 @@ export function OrgPortal({ onBack, orgName = 'Rico Tan Sports' }: OrgPortalProp
           </div>
         );
       case 'events':
-        return <OrgDashboard onBack={() => setActiveTab('home')} orgName={orgName} isEmbedded={true} onCreateEvent={() => setActiveTab('create-event')} />;
+        return <OrgDashboard onBack={() => setActiveTab('home')} orgName={orgName} isEmbedded={true} onCreateEvent={handleCreateEventClick} onUpgrade={onUpgrade} />;
 
       case 'settings':
         if (settingsView === 'details') {
@@ -329,6 +348,11 @@ export function OrgPortal({ onBack, orgName = 'Rico Tan Sports' }: OrgPortalProp
           <div className="h-4 bg-white" /> {/* Safe area spacer */}
         </div>
       )}
+      <LimitReachedDialog 
+        isOpen={showLimitDialog} 
+        onClose={() => setShowLimitDialog(false)} 
+        onUpgrade={onUpgrade || (() => {})} 
+      />
     </div>
   );
 }
