@@ -162,6 +162,8 @@ export function AppContent() {
       gamesCreatedToday: 0,
       gamesCreatedThisWeek: 0,
     });
+    // Persist the selected role into AuthContext so SubscriptionScreen exit routing works
+    updateUser({ role: role as 'player' | 'organization', name: signUpData.fullName });
     setIsAuthenticated(true);
     
     // Intercept with Subscription Screen
