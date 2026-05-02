@@ -314,61 +314,58 @@ export function TeamsScreen({ onBack, onViewTeam }: TeamsScreenProps) {
           {activeTab === 'myteam' && currentTeam && (
             <div className="pb-24">
               {/* Team Header */}
-              <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-green-600 pt-8 pb-8 px-6 rounded-b-[2rem] shadow-xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20" />
-                <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full -ml-16 -mb-16" />
-
+              <div className="bg-white rounded-3xl p-6 shadow-xl border border-slate-100 mx-4 -mt-10 relative z-10 overflow-hidden">
                 <div className="flex flex-col items-center text-center relative z-10">
-                  <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-4xl mb-3 shadow-xl border-2 border-white/30">
+                  <div className="w-20 h-20 bg-slate-50 rounded-2xl flex items-center justify-center text-4xl mb-3 shadow-sm border border-slate-100">
                     {currentTeam.logo}
                   </div>
-                  <h1 className="text-white text-2xl mb-1">{currentTeam.name}</h1>
+                  <h1 className="text-slate-900 text-2xl font-bold mb-1">{currentTeam.name}</h1>
                   <div className="flex items-center gap-2 mb-2">
-                    <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm">{currentTeam.sport}</Badge>
-                    <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm">{currentTeam.barangay}</Badge>
+                    <Badge className="bg-slate-50 text-slate-500 border-slate-200">{currentTeam.sport}</Badge>
+                    <Badge className="bg-slate-50 text-slate-500 border-slate-200">{currentTeam.barangay}</Badge>
                   </div>
 
                   {/* Team Level Badge */}
-                  <div className={`mt-2 px-4 py-1.5 rounded-full bg-gradient-to-r ${teamPerks[currentTeam.level - 1].color} shadow-lg`}>
+                  <div className="mt-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 shadow-sm">
                     <div className="flex items-center gap-1.5">
-                      <Trophy className="size-4 text-white" />
-                      <span className="text-white">Level {currentTeam.level} - {teamPerks[currentTeam.level - 1].name}</span>
+                      <Trophy className="size-4 text-blue-700" />
+                      <span className="text-blue-700 font-medium">Level {currentTeam.level} - {teamPerks[currentTeam.level - 1].name}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* EXP Progress Bar */}
-                <div className="mt-6 bg-white/20 backdrop-blur-sm rounded-2xl p-4 border border-white/30">
+                <div className="mt-6 bg-slate-50 rounded-2xl p-4 border border-slate-100">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-white text-sm">Team EXP</span>
-                    <button onClick={() => setShowPerksModal(true)} className="text-white text-sm flex items-center gap-1 hover:underline">
+                    <span className="text-slate-600 text-sm font-medium">Team EXP</span>
+                    <button onClick={() => setShowPerksModal(true)} className="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1 hover:underline">
                       <Gift className="size-3" /> View Perks
                     </button>
                   </div>
-                  <div className="relative h-3 bg-white/20 rounded-full overflow-hidden">
-                    <div className="absolute inset-y-0 left-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full transition-all duration-500 shadow-lg" style={{ width: `${expPercentage}%` }}>
-                      <div className="absolute inset-0 bg-white/30 animate-pulse" />
+                  <div className="relative h-3 bg-slate-200 rounded-full overflow-hidden">
+                    <div className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-500 shadow-sm" style={{ width: `${expPercentage}%` }}>
+                      <div className="absolute inset-0 bg-white/20 animate-pulse" />
                     </div>
                   </div>
                   <div className="flex items-center justify-between mt-1.5">
-                    <span className="text-white/80 text-xs">{currentTeam.exp} / {currentTeam.maxExp} EXP</span>
-                    <span className="text-white/80 text-xs">{Math.round(expPercentage)}%</span>
+                    <span className="text-slate-600 text-xs">{currentTeam.exp} / {currentTeam.maxExp} EXP</span>
+                    <span className="text-slate-600 text-xs">{Math.round(expPercentage)}%</span>
                   </div>
                 </div>
 
                 {/* Team Stats */}
                 <div className="grid grid-cols-3 gap-3 mt-4">
-                  <div className="text-center bg-white/10 backdrop-blur-sm rounded-xl p-2 border border-white/20">
-                    <p className="text-white">{currentTeam.members}/{currentTeam.maxMembers}</p>
-                    <p className="text-white/70 text-xs mt-0.5">Members</p>
+                  <div className="text-center bg-slate-50 rounded-xl p-2 border border-slate-100">
+                    <p className="text-slate-900 font-bold">{currentTeam.members}/{currentTeam.maxMembers}</p>
+                    <p className="text-slate-500 text-xs mt-0.5">Members</p>
                   </div>
-                  <div className="text-center bg-white/10 backdrop-blur-sm rounded-xl p-2 border border-white/20">
-                    <p className="text-white">{currentTeam.points}</p>
-                    <p className="text-white/70 text-xs mt-0.5">Points</p>
+                  <div className="text-center bg-slate-50 rounded-xl p-2 border border-slate-100">
+                    <p className="text-slate-900 font-bold">{currentTeam.points}</p>
+                    <p className="text-slate-500 text-xs mt-0.5">Points</p>
                   </div>
-                  <div className="text-center bg-white/10 backdrop-blur-sm rounded-xl p-2 border border-white/20">
-                    <p className="text-white">{currentTeam.avgRating.toFixed(1)}</p>
-                    <p className="text-white/70 text-xs mt-0.5">Rating</p>
+                  <div className="text-center bg-slate-50 rounded-xl p-2 border border-slate-100">
+                    <p className="text-slate-900 font-bold">{currentTeam.avgRating.toFixed(1)}</p>
+                    <p className="text-slate-500 text-xs mt-0.5">Rating</p>
                   </div>
                 </div>
               </div>
