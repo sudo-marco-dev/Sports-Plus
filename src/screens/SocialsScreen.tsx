@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Heart, MessageCircle, MapPin, Edit, ArrowLeft } from 'lucide-react';
+import { Heart, MessageCircle, MapPin, Edit, ArrowLeft, Search } from 'lucide-react';
 import { Badge } from '../components/ui/badge';
 import { Avatar, AvatarFallback } from '../components/ui/avatar';
 import { ScrollArea } from '../components/ui/scroll-area';
@@ -33,7 +33,7 @@ const mockFeed: FeedPost[] = [
     userInitials: 'RD',
     sport: 'Basketball',
     action: 'just finished a game',
-    venue: 'Taguig Sports Complex',
+    venue: 'Ramon V. Mitra Sports Complex',
     score: 'Team A 21 - Team B 15',
     mvp: 'Marco Reyes',
     points: 100,
@@ -55,12 +55,12 @@ const mockFeed: FeedPost[] = [
     userInitials: 'MR',
     sport: 'Basketball',
     action: 'earned MVP',
-    venue: 'Taguig Sports Complex',
+    venue: 'Ramon V. Mitra Sports Complex',
     score: 'Team A 21 - Team B 15',
     mvp: 'Marco Reyes',
     points: 150,
-    caption: null,
-    photo: null,
+    caption: undefined,
+    photo: undefined,
     likes: 28,
     liked: true,
     comments: [],
@@ -74,12 +74,12 @@ const mockFeed: FeedPost[] = [
     userInitials: 'AS',
     sport: 'Badminton',
     action: 'completed a match',
-    venue: 'Pasig Badminton Center',
+    venue: 'San Pedro Covered Court',
     score: '21-18, 21-15',
-    mvp: null,
+    mvp: undefined,
     points: 80,
     caption: 'Good match today despite the heat ☀️',
-    photo: null,
+    photo: undefined,
     likes: 7,
     liked: false,
     comments: [],
@@ -93,12 +93,12 @@ const mockFeed: FeedPost[] = [
     userInitials: 'DL',
     sport: 'Football',
     action: 'joined a team game',
-    venue: 'Ateneo Oval',
-    score: 'FC Pasig 3 - 1 QC United',
+    venue: 'Palawan State University (PalSU) Gymnasium',
+    score: 'FC Sicsican 3 - 1 San Pedro United',
     mvp: 'Diego Lim',
     points: 90,
-    caption: null,
-    photo: null,
+    caption: undefined,
+    photo: undefined,
     likes: 19,
     liked: false,
     comments: [{ user: 'Marco R.', text: 'Bro that goal was insane!' }],
@@ -113,7 +113,27 @@ interface SocialsScreenProps {
 
 export function SocialsScreen({ onBack }: SocialsScreenProps) {
   const [feed, setFeed] = useState<FeedPost[]>(mockFeed);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedSport, setSelectedSport] = useState('All');
   const [expandedComments, setExpandedComments] = useState<string | null>(null);
+
+  const sportsCategories = ['All', 'Basketball', 'Volleyball', 'Football', 'Tennis'];
+
+  const filteredFeed = feed.filter(post => {
+    // 1. Text Search Match
+    const query = searchQuery.toLowerCase();
+    const matchesSearch = query === '' || (
+      post.userName.toLowerCase().includes(query) ||
+      post.sport.toLowerCase().includes(query) ||
+      (post.venue && post.venue.toLowerCase().includes(query)) ||
+      (post.caption && post.caption.toLowerCase().includes(query))
+    );
+    
+    // 2. Category Match
+    const matchesCategory = selectedSport === 'All' || post.sport === selectedSport;
+    
+    return matchesSearch && matchesCategory;
+  });
   const [showShareModal, setShowShareModal] = useState(false);
   const [selectedGameForShare, setSelectedGameForShare] = useState<any>(null);
 
@@ -179,7 +199,7 @@ export function SocialsScreen({ onBack }: SocialsScreenProps) {
   return (
     <div className="h-screen w-full max-w-md mx-auto bg-gray-50 flex flex-col pb-24">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-green-500 px-6 pt-8 pb-6 rounded-b-3xl shadow-lg">
+      <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-green-600 px-6 pt-10 pb-8 rounded-b-[2rem] text-white shadow-lg relative overflow-hidden">
         <div className="flex items-center justify-between mb-4">
           {onBack && (
             <button
@@ -199,14 +219,55 @@ export function SocialsScreen({ onBack }: SocialsScreenProps) {
         {/* Location */}
         <div className="flex items-center gap-2 text-white/90 text-sm bg-white/10 backdrop-blur-sm px-3 py-2 rounded-lg inline-flex">
           <MapPin className="w-4 h-4" />
-          <span>Near Quezon City</span>
+          <span>Near Puerto Princesa</span>
         </div>
+      </div>
+
+      {/* Search Bar */}
+      <div className="px-4 py-3 bg-slate-50 sticky top-0 z-10 border-b border-slate-100 mt-2">
+        <div className="relative flex items-center">
+          <Search className="absolute left-3 text-slate-400" size={18} />
+          <input
+            type="text"
+            placeholder="Search players, venues, or sports..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-white border border-slate-200 rounded-full py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#10b981] shadow-sm transition-all"
+          />
+        </div>
+      </div>
+
+      {/* Categories */}
+      <div className="flex gap-2 overflow-x-auto py-2 px-4 bg-slate-50 border-b border-slate-100 whitespace-nowrap no-scrollbar">
+        {sportsCategories.map(category => (
+          <button
+            key={category}
+            onClick={() => setSelectedSport(category)}
+            className="px-4 py-1.5 rounded-full text-sm font-medium transition-colors border"
+            style={
+              selectedSport === category
+                ? { backgroundColor: '#10b981', color: 'white', borderColor: '#10b981' }
+                : { backgroundColor: 'white', color: '#475569', borderColor: '#e2e8f0' }
+            }
+          >
+            {category}
+          </button>
+        ))}
       </div>
 
       {/* Feed */}
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-4 pb-24">
-          {feed.map(post => (
+          {filteredFeed.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+              <div className="bg-slate-100 p-4 rounded-full mb-4">
+                <Search className="w-6 h-6 text-slate-400" />
+              </div>
+              <p className="text-lg font-semibold text-slate-700">No posts found</p>
+              <p className="text-sm text-slate-500 mt-1">We couldn't find anything matching your search.<br/>Try adjusting your keywords or category.</p>
+            </div>
+          )}
+          {filteredFeed.map(post => (
             <div key={post.id} className="bg-white rounded-2xl shadow-lg p-4 space-y-3">
               {/* Top Row: Avatar, Name, Sport, Time */}
               <div className="flex items-center gap-3 justify-between">

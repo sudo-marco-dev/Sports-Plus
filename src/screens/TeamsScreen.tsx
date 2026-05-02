@@ -162,7 +162,7 @@ export function TeamsScreen({ onBack, onViewTeam }: TeamsScreenProps) {
   const topTeams = [...mockTeams].sort((a, b) => b.totalPoints - a.totalPoints);
 
   // Filter teams by sport
-  const filteredTeams = selectedSport === 'All' 
+  const filteredTeams = selectedSport === 'All'
     ? [...mockTeams].sort((a, b) => b.totalPoints - a.totalPoints)
     : [...mockTeams].filter(t => t.sport === selectedSport).sort((a, b) => b.totalPoints - a.totalPoints);
 
@@ -198,7 +198,7 @@ export function TeamsScreen({ onBack, onViewTeam }: TeamsScreenProps) {
     return (
       <div className="h-screen w-full max-w-md mx-auto bg-gray-50 flex flex-col pb-24">
         {/* Header with Tabs */}
-        <div className="bg-gradient-to-r from-blue-600 to-green-500 px-6 pt-8 pb-4 rounded-b-3xl shadow-lg">
+        <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-green-600 rounded-b-[2rem] pt-8 pb-12 px-6">
           <div className="flex items-center justify-between mb-4">
             {onBack && (
               <button onClick={onBack} className="text-white hover:bg-white/20 p-2 rounded-lg transition-colors">
@@ -210,7 +210,7 @@ export function TeamsScreen({ onBack, onViewTeam }: TeamsScreenProps) {
               <Plus className="w-5 h-5" />
             </button>
           </div>
-          
+
           {/* Tabs */}
           <div className="flex gap-2">
             <button onClick={() => setActiveTab('browse')} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'browse' ? 'bg-white text-blue-600' : 'text-white/80 hover:bg-white/20'}`}>Browse</button>
@@ -263,11 +263,10 @@ export function TeamsScreen({ onBack, onViewTeam }: TeamsScreenProps) {
                   <button
                     key={sport}
                     onClick={() => setSelectedSport(sport)}
-                    className={`px-4 py-2 rounded-full whitespace-nowrap transition-all ${
-                      selectedSport === sport
+                    className={`px-4 py-2 rounded-full whitespace-nowrap transition-all ${selectedSport === sport
                         ? 'bg-blue-600 text-white shadow-lg'
                         : 'bg-white text-gray-700 border border-gray-200'
-                    }`}
+                      }`}
                   >
                     {sport}
                   </button>
@@ -318,7 +317,7 @@ export function TeamsScreen({ onBack, onViewTeam }: TeamsScreenProps) {
               <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-green-600 pt-8 pb-8 px-6 rounded-b-[2rem] shadow-xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20" />
                 <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full -ml-16 -mb-16" />
-                
+
                 <div className="flex flex-col items-center text-center relative z-10">
                   <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-4xl mb-3 shadow-xl border-2 border-white/30">
                     {currentTeam.logo}
@@ -328,7 +327,7 @@ export function TeamsScreen({ onBack, onViewTeam }: TeamsScreenProps) {
                     <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm">{currentTeam.sport}</Badge>
                     <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm">{currentTeam.barangay}</Badge>
                   </div>
-                  
+
                   {/* Team Level Badge */}
                   <div className={`mt-2 px-4 py-1.5 rounded-full bg-gradient-to-r ${teamPerks[currentTeam.level - 1].color} shadow-lg`}>
                     <div className="flex items-center gap-1.5">
@@ -754,7 +753,7 @@ export function TeamsScreen({ onBack, onViewTeam }: TeamsScreenProps) {
   // If no team, show team discovery/creation view
   return (
     <div className="h-screen w-full max-w-md mx-auto bg-gray-50 flex flex-col pb-20 overflow-y-auto">
-      <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-green-600 pt-8 pb-12 px-6">
+      <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-green-600 rounded-b-[2rem] pt-8 pb-12 px-6">
         <div className="flex items-center justify-between mb-3">
           <div>
             <h1 className="text-white text-2xl font-bold">Teams</h1>

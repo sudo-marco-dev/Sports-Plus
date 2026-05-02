@@ -132,10 +132,10 @@ const sportIcons: Record<string, string> = {
 interface HomeScreenProps {
   onOpenChat?: (gameId: string, organizerName: string) => void;
   myGames?: Array<{
-    id: string; 
-    name: string; 
-    date: string; 
-    time: string; 
+    id: string;
+    name: string;
+    date: string;
+    time: string;
     location: string;
     verificationStatus?: 'pending' | 'verified' | 'expired';
     confirmations?: number;
@@ -217,13 +217,13 @@ export function HomeScreen({ onOpenChat, myGames = [], onManageGame, onJoinGame,
     return 0;
   });
 
-  let filteredGames = (selectedSport === 'all' 
-    ? sortedGames 
+  let filteredGames = (selectedSport === 'all'
+    ? sortedGames
     : sortedGames.filter(game => game.sport === selectedSport));
 
   // Apply search filter
   if (searchQuery.trim()) {
-    filteredGames = filteredGames.filter(game => 
+    filteredGames = filteredGames.filter(game =>
       game.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       game.sport.toLowerCase().includes(searchQuery.toLowerCase()) ||
       game.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -280,17 +280,15 @@ export function HomeScreen({ onOpenChat, myGames = [], onManageGame, onJoinGame,
         <div className="bg-white rounded-2xl shadow-lg shadow-gray-200/50 p-2 flex gap-2">
           <button
             onClick={() => setView('list')}
-            className={`flex-1 py-2 rounded-xl transition-colors text-center ${
-              view === 'list' ? 'bg-blue-600 text-white' : 'text-gray-600'
-            }`}
+            className={`flex-1 py-2 rounded-xl transition-colors text-center ${view === 'list' ? 'bg-blue-600 text-white' : 'text-gray-600'
+              }`}
           >
             List View
           </button>
           <button
             onClick={() => setView('map')}
-            className={`flex-1 py-2 rounded-xl transition-colors text-center ${
-              view === 'map' ? 'bg-blue-600 text-white' : 'text-gray-600'
-            }`}
+            className={`flex-1 py-2 rounded-xl transition-colors text-center ${view === 'map' ? 'bg-blue-600 text-white' : 'text-gray-600'
+              }`}
           >
             Map View
           </button>
@@ -341,7 +339,7 @@ export function HomeScreen({ onOpenChat, myGames = [], onManageGame, onJoinGame,
                   { top: '55%', left: '20%' },
                 ];
                 const pos = positions[index % positions.length];
-                
+
                 return (
                   <div
                     key={game.id}
@@ -353,12 +351,12 @@ export function HomeScreen({ onOpenChat, myGames = [], onManageGame, onJoinGame,
                     <div className="absolute inset-0 -m-4">
                       <div className="absolute inset-0 bg-blue-500 rounded-full animate-ping opacity-75"></div>
                     </div>
-                    
+
                     {/* Pin Icon */}
                     <div className="relative z-10 bg-blue-600 rounded-full p-3 shadow-xl border-4 border-white group-hover:scale-110 transition-transform">
                       <MapPin className="w-6 h-6 text-white fill-white" />
                     </div>
-                    
+
                     {/* Game Info Popup */}
                     <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-white rounded-xl shadow-xl p-3 min-w-[180px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none border-2 border-blue-200">
                       <div className="flex items-center gap-2 mb-1">
@@ -415,7 +413,7 @@ export function HomeScreen({ onOpenChat, myGames = [], onManageGame, onJoinGame,
                 </div>
               </div>
             </div>
-            
+
             <div className="p-4 bg-white border-t border-gray-100">
               <p className="text-sm text-gray-600 text-center">
                 Tap on pins to view game details • {filteredGames.length} games nearby
@@ -429,11 +427,10 @@ export function HomeScreen({ onOpenChat, myGames = [], onManageGame, onJoinGame,
             <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
               <button
                 onClick={() => setSelectedSport('all')}
-                className={`flex-shrink-0 border-2 rounded-2xl px-4 py-2 flex items-center gap-2 transition-colors ${
-                  selectedSport === 'all' 
-                    ? 'border-blue-600 bg-blue-50 text-blue-700' 
+                className={`flex-shrink-0 border-2 rounded-2xl px-4 py-2 flex items-center gap-2 transition-colors ${selectedSport === 'all'
+                    ? 'border-blue-600 bg-blue-50 text-blue-700'
                     : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                }`}
+                  }`}
               >
                 <span className="text-sm">All Sports</span>
               </button>
@@ -441,11 +438,10 @@ export function HomeScreen({ onOpenChat, myGames = [], onManageGame, onJoinGame,
                 <button
                   key={sport}
                   onClick={() => setSelectedSport(sport)}
-                  className={`flex-shrink-0 border-2 rounded-2xl px-4 py-2 flex items-center gap-2 transition-colors ${
-                    selectedSport === sport
+                  className={`flex-shrink-0 border-2 rounded-2xl px-4 py-2 flex items-center gap-2 transition-colors ${selectedSport === sport
                       ? 'border-blue-600 bg-blue-50 text-blue-700'
                       : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                  }`}
+                    }`}
                 >
                   <span className="text-xl">{icon}</span>
                   <span className="text-sm">{sport}</span>
@@ -464,7 +460,7 @@ export function HomeScreen({ onOpenChat, myGames = [], onManageGame, onJoinGame,
                         <div className="flex items-center gap-2 flex-wrap">
                           <h3 className="text-gray-900 font-semibold">{game.title}</h3>
                           {game.isPromoted && (
-                            <span 
+                            <span
                               style={{ background: 'linear-gradient(to right, #fbbf24, #ea580c)' }}
                               className="text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 uppercase tracking-wider shadow-sm"
                             >
@@ -513,20 +509,19 @@ export function HomeScreen({ onOpenChat, myGames = [], onManageGame, onJoinGame,
                   </div>
 
                   <div className="flex gap-2">
-                    <Button 
+                    <Button
                       onClick={() => {
                         if (!isFull) {
                           toggleJoinGame(game.id);
                         }
                       }}
                       disabled={isFull && !joinedGames.includes(game.id)}
-                      className={`flex-1 rounded-xl transition-all font-semibold ${
-                        joinedGames.includes(game.id)
+                      className={`flex-1 rounded-xl transition-all font-semibold ${joinedGames.includes(game.id)
                           ? 'bg-red-600 hover:bg-red-700 text-white'
                           : isFull
-                          ? 'bg-gray-400 text-white cursor-not-allowed opacity-50'
-                          : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white'
-                      }`}
+                            ? 'bg-gray-400 text-white cursor-not-allowed opacity-50'
+                            : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white'
+                        }`}
                     >
                       {joinedGames.includes(game.id) ? 'Leave Game' : isFull ? 'Game Full' : 'Join Game'}
                     </Button>
@@ -551,12 +546,12 @@ export function HomeScreen({ onOpenChat, myGames = [], onManageGame, onJoinGame,
               );
 
               return game.isPromoted ? (
-                <div 
-                  key={game.id} 
-                  style={{ 
+                <div
+                  key={game.id}
+                  style={{
                     background: 'linear-gradient(to right, #fbbf24, #f59e0b, #ea580c)',
                     padding: '2px',
-                    borderRadius: '1rem',
+
                     boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
                   }}
                 >
@@ -620,16 +615,15 @@ export function HomeScreen({ onOpenChat, myGames = [], onManageGame, onJoinGame,
                 <p className="text-gray-600 text-sm">{selectedGame?.slots.current}/{selectedGame?.slots.max}</p>
               </div>
             </div>
-            <Button 
+            <Button
               onClick={() => {
                 toggleJoinGame(selectedGame!.id);
                 setSelectedGame(null);
               }}
-              className={`w-full rounded-xl transition-all font-semibold ${
-                joinedGames.includes(selectedGame?.id || '')
+              className={`w-full rounded-xl transition-all font-semibold ${joinedGames.includes(selectedGame?.id || '')
                   ? 'bg-red-600 hover:bg-red-700 text-white'
                   : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white'
-              }`}
+                }`}
             >
               {joinedGames.includes(selectedGame?.id || '') ? 'Leave Game' : 'Join Game'}
             </Button>

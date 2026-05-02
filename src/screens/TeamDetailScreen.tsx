@@ -62,7 +62,7 @@ export function TeamDetailScreen({ teamId, onBack, currentUserId }: TeamDetailSc
   return (
     <div className="h-screen w-full max-w-md mx-auto bg-gray-50 flex flex-col pb-20">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-green-500 px-6 pt-8 pb-8 rounded-b-3xl shadow-lg">
+      <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-green-600 rounded-b-[2rem] pt-8 pb-12 px-6">
         <div className="flex items-center gap-3 mb-4">
           <button
             onClick={onBack}
@@ -113,7 +113,7 @@ export function TeamDetailScreen({ teamId, onBack, currentUserId }: TeamDetailSc
                   <p className="text-sm text-gray-600 mt-1">{coachUser.specialization || 'Coach'}</p>
                 </div>
               </div>
-              
+
               {currentUserId === team.captainId && (
                 <button
                   onClick={() => setShowCoachPicker(true)}
@@ -213,11 +213,10 @@ export function TeamDetailScreen({ teamId, onBack, currentUserId }: TeamDetailSc
                     // In production, this would update the team and coach data
                     setShowCoachPicker(false);
                   }}
-                  className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
-                    selectedCoach === coach.id
+                  className={`w-full p-4 rounded-lg border-2 transition-all text-left ${selectedCoach === coach.id
                       ? 'border-blue-600 bg-blue-50'
                       : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">

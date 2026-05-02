@@ -55,7 +55,7 @@ const allPlayers: Player[] = [
 
 const allTeams: Team[] = [
   { id: 't1', name: 'Ballers PH', sport: 'Basketball', wins: 28, mvps: 15, totalPoints: 1010, captainName: 'Marco Reyes' },
-  { id: 't2', name: 'FC Pasig', sport: 'Football', wins: 22, mvps: 10, totalPoints: 1320, captainName: 'Diego Lim' },
+  { id: 't2', name: 'FC Sicsican', sport: 'Football', wins: 22, mvps: 10, totalPoints: 1320, captainName: 'Diego Lim' },
   { id: 't3', name: 'Smash Sisters', sport: 'Badminton', wins: 20, mvps: 12, totalPoints: 650, captainName: 'Anika Santos' },
   { id: 't4', name: 'Spike Force', sport: 'Volleyball', wins: 14, mvps: 6, totalPoints: 430, captainName: 'Carla Dizon' },
 ];
@@ -85,7 +85,7 @@ export function ScoutModeScreen({ onBack }: ScoutModeScreenProps) {
     if (activeSport !== 'All') {
       filtered = filtered.filter((p: Player) => p.sport === activeSport);
     }
-    
+
     // Sort by selected category
     return filtered.sort((a, b) => {
       if (activeCategory === 'mvps') {
@@ -135,7 +135,7 @@ export function ScoutModeScreen({ onBack }: ScoutModeScreenProps) {
   return (
     <div className="h-screen w-full max-w-md mx-auto bg-gradient-to-br from-blue-50 to-green-50 flex flex-col pb-20 overflow-hidden">
       {/* Header - Blue/Green Gradient matching the updated UI */}
-      <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-green-600 pt-10 pb-6 px-6 relative shrink-0 shadow-lg">
+      <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-green-600 rounded-b-[2rem] pt-8 pb-12 px-6">
         <div className="flex items-center gap-4 mb-4">
           <button
             onClick={onBack}
@@ -206,15 +206,15 @@ export function ScoutModeScreen({ onBack }: ScoutModeScreenProps) {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 10, right: 20, left: -10, bottom: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                  <XAxis 
-                    dataKey="name" 
-                    axisLine={false} 
-                    tickLine={false} 
+                  <XAxis
+                    dataKey="name"
+                    axisLine={false}
+                    tickLine={false}
                     tick={{ fontSize: 10, fontWeight: 600, fill: '#6b7280' }}
                     dy={10}
                   />
                   <YAxis hide />
-                  <Tooltip 
+                  <Tooltip
                     cursor={{ fill: '#f3f4f6', radius: 8 }}
                     content={({ active, payload }: any) => {
                       if (active && payload && payload.length) {
@@ -243,21 +243,19 @@ export function ScoutModeScreen({ onBack }: ScoutModeScreenProps) {
         <div className="flex gap-2">
           <button
             onClick={() => setActivePeriod('alltime')}
-            className={`flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all ${
-              activePeriod === 'alltime'
+            className={`flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all ${activePeriod === 'alltime'
                 ? 'bg-blue-600 text-white shadow-md'
                 : 'bg-white text-gray-600 border border-gray-200 shadow-sm hover:bg-gray-50'
-            }`}
+              }`}
           >
             All Time
           </button>
           <button
             onClick={() => setActivePeriod('monthly')}
-            className={`flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all ${
-              activePeriod === 'monthly'
+            className={`flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all ${activePeriod === 'monthly'
                 ? 'bg-blue-600 text-white shadow-md'
                 : 'bg-white text-gray-600 border border-gray-200 shadow-sm hover:bg-gray-50'
-            }`}
+              }`}
           >
             This Month
           </button>
@@ -268,21 +266,19 @@ export function ScoutModeScreen({ onBack }: ScoutModeScreenProps) {
           <div className="flex gap-2">
             <button
               onClick={() => setActiveCategory('mvps')}
-              className={`flex-1 py-2 px-3 rounded-full text-sm font-semibold transition-all ${
-                activeCategory === 'mvps'
+              className={`flex-1 py-2 px-3 rounded-full text-sm font-semibold transition-all ${activeCategory === 'mvps'
                   ? 'bg-purple-600 text-white shadow-sm'
                   : 'bg-white text-gray-700 border border-gray-200 shadow-sm hover:bg-gray-50'
-              }`}
+                }`}
             >
               🏆 MVPs
             </button>
             <button
               onClick={() => setActiveCategory('wins')}
-              className={`flex-1 py-2 px-3 rounded-full text-sm font-semibold transition-all ${
-                activeCategory === 'wins'
+              className={`flex-1 py-2 px-3 rounded-full text-sm font-semibold transition-all ${activeCategory === 'wins'
                   ? 'bg-purple-600 text-white shadow-sm'
                   : 'bg-white text-gray-700 border border-gray-200 shadow-sm hover:bg-gray-50'
-              }`}
+                }`}
             >
               🎯 Wins
             </button>

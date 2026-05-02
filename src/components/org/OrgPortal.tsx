@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { 
-  LayoutDashboard, 
-  Calendar, 
-  Settings, 
-  Bell, 
-  Search, 
-  Plus, 
-  Users, 
-  TrendingUp, 
+import {
+  LayoutDashboard,
+  Calendar,
+  Settings,
+  Bell,
+  Search,
+  Plus,
+  Users,
+  TrendingUp,
   ArrowRight,
   ChevronLeft,
   MapPin,
@@ -86,14 +86,14 @@ export function OrgPortal({ onBack, orgName = 'Rico Tan Sports', onUpgrade }: Or
 
               {/* Quick Actions */}
               <div className="grid grid-cols-2 gap-3 mb-2">
-                <Button 
+                <Button
                   onClick={handleCreateEventClick}
                   className="h-24 rounded-3xl bg-gradient-to-br from-blue-600 via-blue-700 to-green-600 flex flex-col items-center justify-center gap-2 shadow-lg shadow-blue-900/20"
                 >
                   <Plus className="size-6 text-white" />
                   <span className="font-semibold">Create Event</span>
                 </Button>
-                <Button 
+                <Button
                   variant="outline"
                   className="h-24 rounded-3xl border-2 border-blue-50 flex flex-col items-center justify-center gap-2 bg-white"
                 >
@@ -124,11 +124,11 @@ export function OrgPortal({ onBack, orgName = 'Rico Tan Sports', onUpgrade }: Or
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-bold text-gray-900 truncate">
-                        {i === 1 ? 'Metro Manila Cup' : 'Inclusive Open'}
+                        {i === 1 ? 'Palawan Cup' : 'Inclusive Open'}
                       </h3>
                       <div className="flex items-center gap-3 mt-1">
                         <span className="flex items-center gap-1 text-[10px] text-gray-400">
-                          <MapPin className="size-3" /> QC Complex
+                          <MapPin className="size-3" />  Ramon V. Mitra Sports Complex
                         </span>
                         <span className="flex items-center gap-1 text-[10px] text-gray-400">
                           <Clock className="size-3" /> 2:00 PM
@@ -154,7 +154,7 @@ export function OrgPortal({ onBack, orgName = 'Rico Tan Sports', onUpgrade }: Or
             <div className="space-y-6 pb-32 bg-gray-50 min-h-screen">
               <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-green-600 pt-12 pb-16 px-8 rounded-b-[3rem] text-white shadow-2xl shadow-blue-900/30 shrink-0 relative overflow-hidden">
                 <div className="flex items-center gap-4 mb-6">
-                  <button 
+                  <button
                     onClick={() => setSettingsView('main')}
                     className="p-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all"
                   >
@@ -184,10 +184,10 @@ export function OrgPortal({ onBack, orgName = 'Rico Tan Sports', onUpgrade }: Or
                     <Label className="text-sm font-bold text-gray-500 ml-1">Official Address</Label>
                     <div className="relative group">
                       <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-600" />
-                      <Input defaultValue="123 Sports Ave, Quezon City" className="pl-12 h-14 rounded-2xl border-gray-100 bg-gray-50 focus:bg-white transition-all" />
+                      <Input defaultValue="123 Sports Ave, Puerto Princesa City" className="pl-12 h-14 rounded-2xl border-gray-100 bg-gray-50 focus:bg-white transition-all" />
                     </div>
                   </div>
-                  
+
                   <Button className="w-full h-14 rounded-2xl bg-gradient-to-r from-blue-600 to-green-600 text-white font-bold text-lg shadow-xl shadow-blue-200 mt-4">
                     Save Changes
                   </Button>
@@ -202,7 +202,7 @@ export function OrgPortal({ onBack, orgName = 'Rico Tan Sports', onUpgrade }: Or
             <div className="space-y-6 pb-32 bg-gray-50 min-h-screen">
               <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-green-600 pt-12 pb-16 px-8 rounded-b-[3rem] text-white shadow-2xl shadow-blue-900/30 shrink-0 relative overflow-hidden">
                 <div className="flex items-center gap-4 mb-6">
-                  <button 
+                  <button
                     onClick={() => setSettingsView('main')}
                     className="p-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all"
                   >
@@ -232,8 +232,8 @@ export function OrgPortal({ onBack, orgName = 'Rico Tan Sports', onUpgrade }: Or
                   ))}
                 </div>
 
-                <Button 
-                  onClick={onBack} 
+                <Button
+                  onClick={onBack}
                   className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-2xl h-14 shadow-xl shadow-red-200 font-bold text-lg border-none mt-8"
                 >
                   Sign Out Organization
@@ -249,7 +249,7 @@ export function OrgPortal({ onBack, orgName = 'Rico Tan Sports', onUpgrade }: Or
               <h1 className="text-4xl font-black tracking-tighter">Org Settings</h1>
               <p className="text-blue-100 font-semibold tracking-tight">Manage profile and team members</p>
             </div>
-            
+
             <div className="px-6 space-y-4 -mt-10 relative z-10">
               <Card className="rounded-[2rem] border-none shadow-xl shadow-gray-200/50">
                 <CardContent className="p-6 flex items-center gap-4">
@@ -265,8 +265,8 @@ export function OrgPortal({ onBack, orgName = 'Rico Tan Sports', onUpgrade }: Or
 
               <div className="bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-50 overflow-hidden">
                 {['Organization Details', 'Notification Preferences'].map((setting, idx) => (
-                  <button 
-                    key={idx} 
+                  <button
+                    key={idx}
                     onClick={() => setSettingsView(idx === 0 ? 'details' : 'notifications')}
                     className="w-full flex items-center justify-between p-6 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-all group"
                   >
@@ -295,7 +295,7 @@ export function OrgPortal({ onBack, orgName = 'Rico Tan Sports', onUpgrade }: Or
         <div className="absolute inset-0 z-50 bg-gray-50 flex flex-col">
           <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-green-600 pt-16 pb-20 px-8 rounded-b-[3rem] text-white shadow-2xl shadow-blue-900/30 shrink-0 relative overflow-hidden">
             <div className="flex items-center gap-4">
-              <button 
+              <button
                 onClick={() => setActiveTab('home')}
                 className="bg-white/10 hover:bg-white/20 transition-all p-3 rounded-2xl text-white border border-white/20 backdrop-blur-md shadow-lg"
               >
@@ -321,14 +321,14 @@ export function OrgPortal({ onBack, orgName = 'Rico Tan Sports', onUpgrade }: Or
       {activeTab !== 'create-event' && (
         <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-white/80 backdrop-blur-xl border-t border-gray-100 z-40">
           <div className="flex justify-around items-center h-20 px-6">
-            <button 
+            <button
               onClick={() => setActiveTab('home')}
               className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'home' ? 'text-blue-600' : 'text-gray-400'}`}
             >
               <LayoutDashboard className={`size-6 ${activeTab === 'home' ? 'fill-blue-50' : ''}`} />
               <span className="text-[10px] font-bold">Home</span>
             </button>
-            <button 
+            <button
               onClick={() => setActiveTab('events')}
               className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'events' ? 'text-blue-600' : 'text-gray-400'}`}
             >
@@ -337,7 +337,7 @@ export function OrgPortal({ onBack, orgName = 'Rico Tan Sports', onUpgrade }: Or
             </button>
 
 
-            <button 
+            <button
               onClick={() => setActiveTab('settings')}
               className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'settings' ? 'text-blue-600' : 'text-gray-400'}`}
             >
@@ -348,10 +348,10 @@ export function OrgPortal({ onBack, orgName = 'Rico Tan Sports', onUpgrade }: Or
           <div className="h-4 bg-white" /> {/* Safe area spacer */}
         </div>
       )}
-      <LimitReachedDialog 
-        isOpen={showLimitDialog} 
-        onClose={() => setShowLimitDialog(false)} 
-        onUpgrade={onUpgrade || (() => {})} 
+      <LimitReachedDialog
+        isOpen={showLimitDialog}
+        onClose={() => setShowLimitDialog(false)}
+        onUpgrade={onUpgrade || (() => { })}
       />
     </div>
   );

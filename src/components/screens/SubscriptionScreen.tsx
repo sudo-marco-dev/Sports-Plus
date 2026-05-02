@@ -57,7 +57,6 @@ export function SubscriptionScreen({ onSelectTier }: SubscriptionScreenProps) {
           <div className="space-y-6 mb-10 w-full max-w-[280px] mx-auto">
             {[
               { icon: <Trophy className="size-5 text-[#10b981]" />, text: "Unlimited Tournaments", desc: "Join and host as many as you want" },
-              { icon: <Zap className="size-5 text-blue-500" />, text: "Priority Matchmaking", desc: "Get matched with top players faster" },
               { icon: <Star className="size-5 text-indigo-500" />, text: "Exclusive Pro Badge", desc: "Stand out in the community" },
               { icon: <Shield className="size-5 text-cyan-500" />, text: "Advanced Analytics", desc: "Deep dive into your performance" },
             ].map((item, i) => (
@@ -80,7 +79,7 @@ export function SubscriptionScreen({ onSelectTier }: SubscriptionScreenProps) {
           >
             Start Premium
           </Button>
-          <p className="text-center text-slate-400 text-[10px] mt-6 font-bold uppercase tracking-[0.25em]">NO COMMITMENT • CANCEL ANYTIME</p>
+
         </Card>
 
         {/* Free Plan Path */}

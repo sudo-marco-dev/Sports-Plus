@@ -55,7 +55,7 @@ const allPlayers: Player[] = [
 
 const allTeams: Team[] = [
   { id: 't1', name: 'Ballers PH', sport: 'Basketball', wins: 28, mvps: 15, totalPoints: 1010, captainName: 'Marco Reyes' },
-  { id: 't2', name: 'FC Pasig', sport: 'Football', wins: 22, mvps: 10, totalPoints: 1320, captainName: 'Diego Lim' },
+  { id: 't2', name: 'FC Sicsican', sport: 'Football', wins: 22, mvps: 10, totalPoints: 1320, captainName: 'Diego Lim' },
   { id: 't3', name: 'Smash Sisters', sport: 'Badminton', wins: 20, mvps: 12, totalPoints: 650, captainName: 'Anika Santos' },
   { id: 't4', name: 'Spike Force', sport: 'Volleyball', wins: 14, mvps: 6, totalPoints: 430, captainName: 'Carla Dizon' },
 ];
@@ -85,7 +85,7 @@ export function LeaderboardScreen({ onBack, isPublic = false }: LeaderboardScree
     if (activeSport !== 'All') {
       filtered = filtered.filter((p: Player) => p.sport === activeSport);
     }
-    
+
     // Sort by selected category
     return filtered.sort((a, b) => {
       if (activeCategory === 'mvps') {
@@ -136,9 +136,9 @@ export function LeaderboardScreen({ onBack, isPublic = false }: LeaderboardScree
 
   return (
     <div className="h-screen w-full max-w-md mx-auto bg-gradient-to-br from-blue-50 to-green-50 flex flex-col pb-20">
-      <div className="bg-gradient-to-r from-teal-600 to-blue-600 px-6 pt-10 pb-6 shadow-lg relative">
+      <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-green-600 rounded-b-[2rem] pt-8 pb-12 px-6">
         {isPublic && onBack && (
-          <button 
+          <button
             onClick={onBack}
             className="absolute top-10 left-4 text-white p-2 rounded-full hover:bg-white/20 transition-colors"
           >
@@ -205,15 +205,15 @@ export function LeaderboardScreen({ onBack, isPublic = false }: LeaderboardScree
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 10, right: 20, left: -10, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                <XAxis 
-                  dataKey="name" 
-                  axisLine={false} 
-                  tickLine={false} 
+                <XAxis
+                  dataKey="name"
+                  axisLine={false}
+                  tickLine={false}
                   tick={{ fontSize: 10, fontWeight: 600, fill: '#6b7280' }}
                   dy={10}
                 />
                 <YAxis hide />
-                <Tooltip 
+                <Tooltip
                   cursor={{ fill: '#f3f4f6', radius: 8 }}
                   content={({ active, payload }: any) => {
                     if (active && payload && payload.length) {
@@ -242,21 +242,19 @@ export function LeaderboardScreen({ onBack, isPublic = false }: LeaderboardScree
       <div className="px-4 py-1 flex gap-2">
         <button
           onClick={() => setActivePeriod('alltime')}
-          className={`flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all ${
-            activePeriod === 'alltime'
+          className={`flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all ${activePeriod === 'alltime'
               ? 'bg-blue-600 text-white shadow-md'
               : 'bg-white text-gray-600 border border-gray-200'
-          }`}
+            }`}
         >
           All Time
         </button>
         <button
           onClick={() => setActivePeriod('monthly')}
-          className={`flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all ${
-            activePeriod === 'monthly'
+          className={`flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all ${activePeriod === 'monthly'
               ? 'bg-blue-600 text-white shadow-md'
               : 'bg-white text-gray-600 border border-gray-200'
-          }`}
+            }`}
         >
           This Month
         </button>
@@ -267,21 +265,19 @@ export function LeaderboardScreen({ onBack, isPublic = false }: LeaderboardScree
         <div className="px-4 py-2 flex gap-2">
           <button
             onClick={() => setActiveCategory('mvps')}
-            className={`flex-1 py-2 px-3 rounded-full text-sm font-semibold transition-all ${
-              activeCategory === 'mvps'
+            className={`flex-1 py-2 px-3 rounded-full text-sm font-semibold transition-all ${activeCategory === 'mvps'
                 ? 'bg-purple-600 text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
+              }`}
           >
             🏆 MVPs
           </button>
           <button
             onClick={() => setActiveCategory('wins')}
-            className={`flex-1 py-2 px-3 rounded-full text-sm font-semibold transition-all ${
-              activeCategory === 'wins'
+            className={`flex-1 py-2 px-3 rounded-full text-sm font-semibold transition-all ${activeCategory === 'wins'
                 ? 'bg-purple-600 text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
+              }`}
           >
             🎯 Wins
           </button>
@@ -312,9 +308,8 @@ export function LeaderboardScreen({ onBack, isPublic = false }: LeaderboardScree
               return (
                 <div
                   key={player.id}
-                  className={`bg-white rounded-2xl p-4 shadow-md border-2 transition-all ${
-                    isCurrentUser ? 'border-blue-400 bg-blue-50' : 'border-gray-100'
-                  }`}
+                  className={`bg-white rounded-2xl p-4 shadow-md border-2 transition-all ${isCurrentUser ? 'border-blue-400 bg-blue-50' : 'border-gray-100'
+                    }`}
                 >
                   {/* Rank and Avatar */}
                   <div className="flex items-start gap-4 mb-3">
@@ -362,9 +357,8 @@ export function LeaderboardScreen({ onBack, isPublic = false }: LeaderboardScree
               return (
                 <div
                   key={player.id}
-                  className={`bg-white rounded-xl p-3 flex items-center gap-3 border transition-all ${
-                    isCurrentUser ? 'border-2 border-blue-400 bg-blue-50' : 'border border-gray-100'
-                  }`}
+                  className={`bg-white rounded-xl p-3 flex items-center gap-3 border transition-all ${isCurrentUser ? 'border-2 border-blue-400 bg-blue-50' : 'border border-gray-100'
+                    }`}
                 >
                   <div className="w-10 h-10 rounded-lg bg-gray-200 flex items-center justify-center font-bold text-gray-700 flex-shrink-0">
                     #{player.rank}
@@ -438,11 +432,11 @@ export function LeaderboardScreen({ onBack, isPublic = false }: LeaderboardScree
               <p className="text-indigo-100 text-sm mb-6 relative z-10">
                 Join your local sports community, play games, and earn points to climb the ranks.
               </p>
-              <button 
+              <button
                 onClick={() => {
-                   window.location.hash = '#signup';
-                   window.location.reload(); 
-                   // Ideally we'd use a prop for this, but since we are handling links natively in App.tsx via hash right now
+                  window.location.hash = '#signup';
+                  window.location.reload();
+                  // Ideally we'd use a prop for this, but since we are handling links natively in App.tsx via hash right now
                 }}
                 className="w-full bg-white text-indigo-700 font-bold py-3 px-4 rounded-xl shadow-lg transition-transform hover:scale-105 active:scale-95 relative z-10 flex items-center justify-center gap-2"
               >

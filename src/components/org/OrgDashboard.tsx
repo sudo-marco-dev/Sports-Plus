@@ -38,18 +38,18 @@ const sportEmojis: Record<string, string> = {
 
 export const mockLiveEvents: LiveEvent[] = [
   {
-    id: 'le1', title: 'Metro Manila Basketball Cup 2026', sport: 'Basketball',
-    date: 'Apr 20, 2026', venue: 'Rizal Memorial Coliseum',
+    id: 'le1', title: 'Palawan Basketball Cup 2026', sport: 'Basketball',
+    date: 'Apr 20, 2026', venue: 'Puerto Princesa City Coliseum',
     applicants: 18, maxPlayers: 24, status: 'active', isPromoted: true,
   },
   {
     id: 'le2', title: 'Inclusive Badminton Open', sport: 'Badminton',
-    date: 'Apr 27, 2026', venue: 'Pasig Badminton Center',
+    date: 'Apr 27, 2026', venue: 'San Pedro Covered Court',
     applicants: 12, maxPlayers: 16, status: 'upcoming',
   },
   {
-    id: 'le3', title: 'BGC Futsal Tournament', sport: 'Football',
-    date: 'Apr 9, 2026', venue: 'BGC Futsal Arena',
+    id: 'le3', title: 'Bancao-Bancao Futsal Tournament', sport: 'Football',
+    date: 'Apr 9, 2026', venue: 'Bancao-Bancao Sports Center',
     applicants: 10, maxPlayers: 10, status: 'completed',
   },
 ];

@@ -53,11 +53,11 @@ interface TeamEvent {
 const soloEvents: SoloEvent[] = [
   {
     id: 'se1',
-    name: 'Metro Manila Badminton Open',
+    name: 'Palawan Badminton Open',
     sport: 'Badminton',
     org: 'Puerto Princesa Sports Office',
-    date: 'Apr 20, 2026',
-    venue: 'Pasig Badminton Center',
+    date: 'Apr 12, 2026',
+    venue: 'San Pedro Covered Court',
     entryFee: 'Free',
     prize: 'Gold Medal + Certificate',
     slots: { filled: 24, total: 32 },
@@ -68,11 +68,11 @@ const soloEvents: SoloEvent[] = [
   },
   {
     id: 'se2',
-    name: 'QC Fun Run 5K',
+    name: 'Puerto Princesa Fun Run 5K',
     sport: 'Running',
-    org: 'Quezon City Athletics',
+    org: 'Puerto Princesa Athletics',
     date: 'Apr 27, 2026',
-    venue: 'Quezon Memorial Circle',
+    venue: 'Baywalk Park',
     entryFee: '₱150',
     prize: 'Finisher Medal',
     slots: { filled: 180, total: 200 },
@@ -83,11 +83,11 @@ const soloEvents: SoloEvent[] = [
   },
   {
     id: 'se3',
-    name: 'BGC Cycling Race 2026',
+    name: 'Bancao-Bancao Cycling Race 2026',
     sport: 'Cycling',
-    org: 'BGC Sports Club',
+    org: 'Bancao-Bancao Sports Club',
     date: 'May 3, 2026',
-    venue: 'Bonifacio Global City',
+    venue: 'Bancao-Bancao Area',
     entryFee: '₱300',
     prize: '₱5,000 + Trophy',
     slots: { filled: 48, total: 50 },
@@ -98,11 +98,11 @@ const soloEvents: SoloEvent[] = [
   },
   {
     id: 'se4',
-    name: 'Manila Tennis Singles Cup',
+    name: 'Puerto Princesa Tennis Singles Cup',
     sport: 'Tennis',
-    org: 'Manila Tennis Club',
+    org: 'Puerto Princesa Tennis Club',
     date: 'May 10, 2026',
-    venue: 'Manila Tennis Club',
+    venue: 'Speaker Ramon V. Mitra Jr. Sports Complex',
     entryFee: '₱200',
     prize: 'Trophy + Certificate',
     slots: { filled: 16, total: 16 },
@@ -117,7 +117,7 @@ const soloEvents: SoloEvent[] = [
     sport: 'Swimming',
     org: 'Philippine Swimming Inc.',
     date: 'May 17, 2026',
-    venue: 'Rizal Memorial Pool',
+    venue: 'Speaker Ramon V. Mitra Jr. Sports Complex',
     entryFee: 'Free',
     prize: 'Gold Medal',
     slots: { filled: 30, total: 40 },
@@ -131,11 +131,11 @@ const soloEvents: SoloEvent[] = [
 const teamEvents: TeamEvent[] = [
   {
     id: 'te1',
-    name: 'Metro Manila Basketball Cup',
+    name: 'Palawan Basketball Cup',
     sport: 'Basketball',
-    org: 'Metro Manila Sports Dev.',
+    org: 'Palawan Sports Dev.',
     date: 'Apr 20, 2026',
-    venue: 'Rizal Memorial Coliseum',
+    venue: 'Puerto Princesa Coliseum',
     entryFee: 'Free',
     prize: 'Trophy + Certificate',
     slots: { filled: 6, total: 8 },
@@ -150,7 +150,7 @@ const teamEvents: TeamEvent[] = [
     sport: 'Football',
     org: 'Philippine Football Fed.',
     date: 'Apr 26, 2026',
-    venue: 'Rizal Memorial Stadium',
+    venue: 'Palawan State University (PalSU) Field',
     entryFee: '₱500/team',
     prize: '₱20,000 + Trophy',
     slots: { filled: 10, total: 16 },
@@ -275,11 +275,10 @@ export function EventsScreen({ onBack }: EventsScreenProps) {
             <button
               key={sport}
               onClick={() => setSportFilter(sport)}
-              className={`px-4 py-2 rounded-full font-medium whitespace-nowrap transition-colors ${
-                sportFilter === sport
+              className={`px-4 py-2 rounded-full font-medium whitespace-nowrap transition-colors ${sportFilter === sport
                   ? 'bg-blue-600 text-white'
                   : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-400'
-              }`}
+                }`}
             >
               {sport}
             </button>
@@ -291,21 +290,19 @@ export function EventsScreen({ onBack }: EventsScreenProps) {
       <div className="px-4 py-2 flex gap-3">
         <button
           onClick={() => setActiveTab('solo')}
-          className={`flex-1 py-3 rounded-full font-bold transition-all ${
-            activeTab === 'solo'
+          className={`flex-1 py-3 rounded-full font-bold transition-all ${activeTab === 'solo'
               ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
               : 'bg-white text-gray-700 border border-gray-300'
-          }`}
+            }`}
         >
           Solo
         </button>
         <button
           onClick={() => setActiveTab('team')}
-          className={`flex-1 py-3 rounded-full font-bold transition-all ${
-            activeTab === 'team'
+          className={`flex-1 py-3 rounded-full font-bold transition-all ${activeTab === 'team'
               ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
               : 'bg-white text-gray-700 border border-gray-300'
-          }`}
+            }`}
         >
           Team
         </button>
@@ -374,11 +371,10 @@ export function EventsScreen({ onBack }: EventsScreenProps) {
                   <Button
                     onClick={() => handleRegisterSolo(event)}
                     disabled={event.status === 'full'}
-                    className={`w-full rounded-xl py-2 font-semibold ${
-                      event.status === 'full'
+                    className={`w-full rounded-xl py-2 font-semibold ${event.status === 'full'
                         ? 'bg-gray-400 text-white cursor-not-allowed'
                         : 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700'
-                    }`}
+                      }`}
                   >
                     {event.status === 'full' ? 'Full' : 'Register Solo'}
                   </Button>
@@ -453,11 +449,10 @@ export function EventsScreen({ onBack }: EventsScreenProps) {
                   <Button
                     onClick={() => handleRegisterTeam(event)}
                     disabled={event.status === 'full'}
-                    className={`w-full rounded-xl py-2 font-semibold ${
-                      event.status === 'full'
+                    className={`w-full rounded-xl py-2 font-semibold ${event.status === 'full'
                         ? 'bg-gray-400 text-white cursor-not-allowed'
                         : 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700'
-                    }`}
+                      }`}
                   >
                     {event.status === 'full' ? 'Full' : 'Register as Team'}
                   </Button>
@@ -498,7 +493,7 @@ export function EventsScreen({ onBack }: EventsScreenProps) {
                   </div>
                 </div>
               </div>
-              
+
               {/* Confirm Button */}
               <Button
                 onClick={handleConfirmTeamRegistration}

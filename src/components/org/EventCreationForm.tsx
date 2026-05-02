@@ -29,12 +29,12 @@ interface EventCreationFormProps {
 
 const sports = ['Basketball', 'Volleyball', 'Football', 'Badminton', 'Tennis', 'Swimming'];
 const venues = [
-  'Taguig Sports Complex',
-  'Pasig Badminton Center',
-  'Rizal Memorial Coliseum',
-  'Makati Sports Center',
-  'BGC Futsal Arena',
-  'Ateneo Oval',
+  'Ramon V. Mitra Sports Complex',
+  'San Pedro Covered Court',
+  'Puerto Princesa City Coliseum',
+  'Santa Monica High School (SMHS) Covered Gym',
+  'Bancao-Bancao Sports Center',
+  'Palawan State University (PalSU) Gymnasium',
 ];
 
 const TOTAL_STEPS = 3;
@@ -133,7 +133,7 @@ export function EventCreationForm({ onSubmit }: EventCreationFormProps) {
             <Label htmlFor="title" className="text-gray-700">Event Title *</Label>
             <Input
               id="title" {...register('title', { required: true })}
-              placeholder="e.g., Metro Manila Basketball Cup"
+              placeholder="e.g., Palawan Basketball Cup"
               className="h-12 rounded-2xl border-gray-200 bg-gray-50"
             />
           </div>
