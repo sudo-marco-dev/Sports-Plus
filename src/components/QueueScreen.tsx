@@ -10,7 +10,6 @@ import { MiniProfileCard } from './MiniProfileCard';
 import { ShareGameModal } from './ShareGameModal';
 import { useAuth } from '../context/AuthContext';
 import { CertificateView } from './CertificateView';
-import { ProBadge } from './ui/ProBadge';
 import { Certificate } from '../data/mockData';
 
 interface QueueScreenProps {
@@ -82,7 +81,7 @@ const mockTeamMembers: TeamMember[] = [
   { id: 'tm4', name: 'James Wilson', avatar: '', skillLevel: 'Casual', online: true },
 ];
 
-export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onGameComplete, onRewardsEarned }: QueueScreenProps) {
+export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onGameComplete, onRewardsEarned, onFinishGame }: QueueScreenProps) {
   const { addPoints, currentUser } = useAuth();
   const [selectedPlayer, setSelectedPlayer] = useState<any>(null);
   const [players, setPlayers] = useState<Player[]>([]);
@@ -119,9 +118,8 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
   const [showCertificateView, setShowCertificateView] = useState(false);
   const [currentCertificate, setCurrentCertificate] = useState<Certificate | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
-  const [mvpVotes, setMvpVotes] = useState<{[playerId: string]: number}>({});
+  const [mvpVotes, setMvpVotes] = useState<{ [playerId: string]: number }>({});
   const [hasVotedMvp, setHasVotedMvp] = useState(false);
-  const [mvpWinner, setMvpWinner] = useState<Player | null>(null);
   const [showMvpReveal, setShowMvpReveal] = useState(false);
 
   useEffect(() => {
@@ -140,7 +138,7 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
         setAllReadyMessage(true);
         toast.success('All players are ready! You can now start the game.');
       }, 4000);
-      
+
       return () => clearTimeout(autoReadyTimer);
     }
   }, [isHost, gameState, players.length]);
@@ -155,7 +153,7 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
         setAllReadyMessage(true);
         toast.success('All players are ready!');
       }, 4000);
-      
+
       return () => clearTimeout(autoReadyTimer);
     }
   }, [isHost, gameState, players, userReady]);
@@ -166,7 +164,7 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
       const autoStartTimer = setTimeout(() => {
         setHostStarting(true);
         toast.success('🎮 Host is starting the game...');
-        
+
         setTimeout(() => {
           setTeam1Score('15');
           setTeam2Score('12');
@@ -175,28 +173,52 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
           toast.success('Game started! Vote on the score...');
         }, 1000);
       }, 2000);
-      
+
       return () => clearTimeout(autoStartTimer);
     }
   }, [isHost, allReadyMessage, readyCount, players.length, gameState]);
+
+  // HOST FLOW: Simulate votes coming in when in vote-score state
+  useEffect(() => {
+    if (isHost && (gameState === 'vote-score' || gameState === 'revote-score') && votesApproved === 0) {
+      const autoVoteTimer = setTimeout(() => {
+        let approveCount = 0;
+        const voteInterval = setInterval(() => {
+          approveCount++;
+          setVotesApproved(approveCount);
+          if (approveCount >= Math.ceil(players.length * 0.7)) {
+            clearInterval(voteInterval);
+            setTimeout(() => {
+              setGameState('mvp-vote');
+              setVotesApproved(0);
+              setVotesDisapproved(0);
+              toast.success('All players approved the score! Moving to MVP voting...');
+            }, 1500);
+          }
+        }, 600);
+      }, 2000);
+
+      return () => clearTimeout(autoVoteTimer);
+    }
+  }, [isHost, gameState, players.length, votesApproved]);
 
   useEffect(() => {
     if (gameState === 'rewards') {
       const rewardsTimer = setTimeout(() => {
         setShowRewardScreen(true);
-        
+
         // Determine if current user's team won
         const currentPlayer = players.find(p => p.isCurrentUser);
         if (currentPlayer && team1Score && team2Score) {
           const score1 = parseInt(team1Score);
           const score2 = parseInt(team2Score);
-          const didWin = (currentPlayer.team === 1 && score1 > score2) || 
-                         (currentPlayer.team === 2 && score2 > score1);
-          
+          const didWin = (currentPlayer.team === 1 && score1 > score2) ||
+            (currentPlayer.team === 2 && score2 > score1);
+
           // Award points based on win/loss
           addPoints(didWin ? 100 : 20);
         }
-        
+
         onRewardsEarned?.(50, 5);
       }, 1000);
       return () => clearTimeout(rewardsTimer);
@@ -215,7 +237,7 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
     ];
 
     const newPlayers: Player[] = [];
-    
+
     newPlayers.push({
       id: 'current-user',
       name: 'You',
@@ -250,7 +272,7 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
 
   const handlePlayerClick = (player: Player) => {
     if (player.isCurrentUser) return; // Don't show profile for current user
-    
+
     setSelectedPlayer({
       name: player.name,
       username: player.name.toLowerCase().replace(' ', '_'),
@@ -267,7 +289,7 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
     if (!userReady) {
       setUserReady(true);
       setReadyCount(prev => prev + 1);
-      setPlayers(prev => prev.map(p => 
+      setPlayers(prev => prev.map(p =>
         p.isCurrentUser ? { ...p, ready: true } : p
       ));
       toast.success('You are ready! All other players will be ready in 4 seconds...');
@@ -275,7 +297,7 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
       setUserReady(false);
       setAllReadyMessage(false);
       setReadyCount(prev => Math.max(0, prev - 1));
-      setPlayers(prev => prev.map(p => 
+      setPlayers(prev => prev.map(p =>
         p.isCurrentUser ? { ...p, ready: false } : p
       ));
       toast.info('You are no longer ready');
@@ -286,7 +308,7 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
   const handleStartGame = () => {
     setHostStarting(true);
     toast.success('🎮 Starting the game...');
-    
+
     setTimeout(() => {
       setGameState('active');
       setHostStarting(false);
@@ -306,7 +328,7 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
       toast.error('Please enter scores for both teams');
       return;
     }
-    
+
     toast.info('Score submitted! Players are voting...');
     setGameState('vote-score');
     setHasUserVoted(false);
@@ -387,14 +409,34 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
   const handleVoteScore = (vote: 'approve' | 'disagree') => {
     setUserVote(vote);
     setHasUserVoted(true);
-    
+
     if (vote === 'approve') {
       setVotesApproved(prev => prev + 1);
       toast.success('You approved the score!');
+
+      // Simulate other players voting
+      setTimeout(() => {
+        let approveCount = 1;
+        const voteInterval = setInterval(() => {
+          approveCount++;
+          setVotesApproved(approveCount);
+          if (approveCount >= Math.ceil(players.length * 0.7)) {
+            clearInterval(voteInterval);
+            setTimeout(() => {
+              setGameState('mvp-vote');
+              setVotesApproved(0);
+              setVotesDisapproved(0);
+              setHasUserVoted(false);
+              setUserVote(null);
+              toast.success('Score approved! Vote for the MVP...');
+            }, 1000);
+          }
+        }, 400);
+      }, 1000);
     } else {
       setVotesDisapproved(prev => prev + 1);
       toast.info('You disagree with the score. You will need to enter the correct score.');
-      
+
       setTimeout(() => {
         setVotesDisapproved(players.length - 1);
         toast.warning('Majority disagrees! Need to re-enter score...');
@@ -408,7 +450,7 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
       toast.error('Please enter correct scores for both teams');
       return;
     }
-    
+
     setVotesApproved(0);
     setVotesDisapproved(0);
     setHasUserVoted(false);
@@ -438,10 +480,10 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
     setHasVotedMvp(true);
     setMvpVotes(prev => ({ ...prev, [player.id]: (prev[player.id] || 0) + 1 }));
     toast.success('MVP vote cast!');
-    
+
     // Simulate other players voting after 2 seconds
     setTimeout(() => {
-      const simulatedVotes: {[playerId: string]: number} = {};
+      const simulatedVotes: { [playerId: string]: number } = {};
       players.forEach(p => {
         // Give current user (id: 'current-user') the most votes regardless of who was tapped
         simulatedVotes[p.id] = p.isCurrentUser ? players.length - 1 : Math.floor(Math.random() * 2);
@@ -461,7 +503,7 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
     }
 
     toast.success(`Rated ${currentPlayer.name} - ${rating} stars`);
-    
+
     if (currentRatingIndex < players.length - 1) {
       setCurrentRatingIndex(prev => prev + 1);
     } else {
@@ -551,7 +593,7 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
               <Trophy className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
               <h2 className="text-gray-900 font-bold text-xl mb-2 text-center">Game Finished!</h2>
               <p className="text-gray-600 text-sm text-center mb-6">Enter the final score below:</p>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="text-sm text-gray-600 font-semibold mb-2 block">Team 1 Score</label>
@@ -609,7 +651,7 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
             </div>
             <h2 className="text-gray-900 font-bold text-2xl mb-2">Game in Progress</h2>
             <p className="text-gray-600 mb-8">Players: {players.length}</p>
-            
+
             <Button
               onClick={handleFinishGame}
               className="w-full rounded-2xl py-3 font-semibold text-white bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
@@ -639,15 +681,15 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
               <div className="mb-8 animate-bounce">
                 <Gift className="w-20 h-20 text-yellow-500 mx-auto" />
               </div>
-              
+
               <h2 className="text-gray-900 font-bold text-2xl mb-8">Game Complete!</h2>
-              
+
               <div className="space-y-4 mb-8">
                 <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-6 border-2 border-blue-200">
                   <p className="text-sm text-blue-700 font-semibold mb-2">Points Earned</p>
                   <p className="text-4xl font-bold text-blue-600">+{points}</p>
                 </div>
-                
+
                 <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-2xl p-6 border-2 border-green-200">
                   <p className="text-sm text-green-700 font-semibold mb-2">Reliability Score</p>
                   <p className="text-4xl font-bold text-green-600">+{reliability}%</p>
@@ -714,7 +756,7 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
               <Trophy className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
               <h2 className="text-gray-900 font-bold text-xl mb-2">Score Confirmation</h2>
               <p className="text-gray-600 mb-6 text-2xl font-bold">Team 1: {team1Score} vs Team 2: {team2Score}</p>
-              
+
               {!isHost && !hasUserVoted && (
                 <div className="grid grid-cols-2 gap-3 mb-6">
                   <Button
@@ -779,7 +821,7 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <h2 className="text-gray-900 font-bold text-xl mb-2 text-center">Correct Final Score</h2>
               <p className="text-gray-600 text-sm text-center mb-6">Majority disagreed with the score. Please enter the correct score:</p>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="text-sm text-gray-600 font-semibold mb-2 block">Team 1 Score</label>
@@ -843,7 +885,7 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
             <Trophy className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
             <h2 className="text-gray-900 font-bold text-xl mb-2">Final Score Confirmation</h2>
             <p className="text-gray-600 mb-6 text-2xl font-bold">Team 1: {team1Score} vs Team 2: {team2Score}</p>
-            
+
             <div className="mb-6">
               <p className="text-sm text-gray-600 font-semibold mb-3">Players Approving:</p>
               <div className="flex flex-wrap gap-2 justify-center">
@@ -863,7 +905,7 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
             </div>
 
             <p className="text-lg font-bold text-green-600">{votesApproved}/{players.length} Approved</p>
-            
+
             {votesApproved >= Math.ceil(players.length * 0.7) && (
               <p className="text-sm text-green-600 font-semibold mt-4">✓ Score confirmed! Moving to rating...</p>
             )}
@@ -891,9 +933,8 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
                   key={player.id}
                   onClick={() => handleVoteMvp(player)}
                   disabled={hasVotedMvp}
-                  className={`w-full bg-white rounded-2xl shadow-lg p-4 flex items-center gap-4 transition-all hover:shadow-xl ${
-                    hasVotedMvp ? 'opacity-60' : 'hover:scale-105'
-                  } ${!hasVotedMvp ? 'cursor-pointer' : ''}`}
+                  className={`w-full bg-white rounded-2xl shadow-lg p-4 flex items-center gap-4 transition-all hover:shadow-xl ${hasVotedMvp ? 'opacity-60' : 'hover:scale-105'
+                    } ${!hasVotedMvp ? 'cursor-pointer' : ''}`}
                 >
                   <Avatar className="size-12">
                     <AvatarFallback className="bg-gradient-to-br from-blue-500 to-green-500 text-white font-bold text-lg">
@@ -910,66 +951,63 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
               ))}
             </div>
           </ScrollArea>
-      </div>
-    );
-  } else {
-    const mvpVotesCopy = Object.entries(mvpVotes).sort(([, a], [, b]) => (b as number) - (a as number));
-    return (
-      <div className="h-screen w-full max-w-md mx-auto bg-gradient-to-br from-yellow-50 to-orange-50 flex flex-col">
-        <div className="bg-gradient-to-br from-yellow-400 via-yellow-500 to-orange-500 pt-8 pb-8 px-6 rounded-b-3xl">
-          <h1 className="text-white text-2xl font-bold text-center">MVP Reveal</h1>
         </div>
-        <ScrollArea className="flex-1 px-6 py-8">
-          <div className="pb-32">
-            <div className="text-center bg-white rounded-3xl shadow-2xl p-8 mb-6">
-              <div className="animate-bounce mb-4 inline-block">
-                <Crown className="w-16 h-16 text-yellow-500" />
-              </div>
-              <h2 className="text-gray-900 font-bold text-3xl mb-2">MVP of the Game!</h2>
-              <div className="bg-gradient-to-r from-yellow-100 to-orange-100 rounded-2xl p-4 mb-4">
-                <p className="text-gray-900 font-bold text-2xl">YOU</p>
-                <p className="text-gray-600 text-sm mt-1">Voted by {players.length - 1} players</p>
-              </div>
-              <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-2xl p-3 inline-block font-bold text-lg mb-6">
-                +50 BONUS MVP POINTS
-              </div>
-            </div>
-            <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-              <h3 className="text-gray-900 font-bold text-lg mb-4">Vote Breakdown</h3>
-              <div className="space-y-3">
-                {mvpVotesCopy.map(([playerId, votes]) => {
-                  const votedPlayer = players.find(p => p.id === playerId);
-                  return (
-                    <div key={playerId} className="flex items-center justify-between">
-                      <span className="text-gray-900 font-semibold">{votedPlayer?.name}</span>
-                      <span className="bg-yellow-100 text-yellow-700 font-bold text-xs px-2 py-1 rounded-full">{votes as number} votes</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+      );
+    } else {
+      const mvpVotesCopy = Object.entries(mvpVotes).sort(([, a], [, b]) => (b as number) - (a as number));
+      return (
+        <div className="h-screen w-full max-w-md mx-auto bg-gradient-to-br from-yellow-50 to-orange-50 flex flex-col">
+          <div className="bg-gradient-to-br from-yellow-400 via-yellow-500 to-orange-500 pt-8 pb-8 px-6 rounded-b-3xl">
+            <h1 className="text-white text-2xl font-bold text-center">MVP Reveal</h1>
           </div>
-        </ScrollArea>
-        <div className="px-6 py-4 bg-white border-t border-gray-200">
+          <ScrollArea className="flex-1 px-6 py-8">
+            <div className="pb-32">
+              <div className="text-center bg-white rounded-3xl shadow-2xl p-8 mb-6">
+                <div className="animate-bounce mb-4 inline-block">
+                  <Crown className="w-16 h-16 text-yellow-500" />
+                </div>
+                <h2 className="text-gray-900 font-bold text-3xl mb-2">MVP of the Game!</h2>
+                <div className="bg-gradient-to-r from-yellow-100 to-orange-100 rounded-2xl p-4 mb-4">
+                  <p className="text-gray-900 font-bold text-2xl">YOU</p>
+                  <p className="text-gray-600 text-sm mt-1">Voted by {players.length - 1} players</p>
+                </div>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-2xl p-3 inline-block font-bold text-lg mb-6">
+                  +50 BONUS MVP POINTS
+                </div>
+              </div>
+              <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                <h3 className="text-gray-900 font-bold text-lg mb-4">Vote Breakdown</h3>
+                <div className="space-y-3">
+                  {mvpVotesCopy.map(([playerId, votes]) => {
+                    const votedPlayer = players.find(p => p.id === playerId);
+                    return (
+                      <div key={playerId} className="flex items-center justify-between">
+                        <span className="text-gray-900 font-semibold">{votedPlayer?.name}</span>
+                        <span className="bg-yellow-100 text-yellow-700 font-bold text-xs px-2 py-1 rounded-full">{votes as number} votes</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </ScrollArea>
+        <div className="px-6 py-4 bg-white border-t border-gray-200 pb-8 relative z-50">
           <button
             onClick={() => {
-              addPoints(50);
-              setGameState('rating');
-              setCurrentRatingIndex(0);
-              setHasVotedMvp(false);
-              setShowMvpReveal(false);
-              setMvpVotes({});
-              toast.success('Moving to player ratings...');
+              if (onFinishGame && gameData) {
+                // Instantly fire the global router bridge
+                onFinishGame(gameData.id, gameData.title, { name: 'Organizer', verified: true });
+              }
             }}
-            className="w-full rounded-2xl py-3 font-semibold text-white bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
+            className="w-full rounded-2xl py-4 font-bold text-white bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 shadow-xl flex items-center justify-center gap-2"
           >
-            Continue to Ratings
+            Proceed to Player Ratings →
           </button>
         </div>
-      </div>
-    );
+        </div>
+      );
+    }
   }
-}
   if (gameState === 'rating') {
     const currentPlayer = players[currentRatingIndex];
     const ratedCount = Object.keys(playerRatings).length;
@@ -1234,7 +1272,7 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
               </div>
             </div>
           )}
-          
+
           {isHost && (
             <div className="bg-purple-50 border border-purple-200 rounded-2xl p-4">
               <div className="flex items-start gap-3">
@@ -1328,8 +1366,8 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
             )}
 
             {isHost && allReadyMessage ? (
-              <Button 
-                onClick={handleStartGame} 
+              <Button
+                onClick={handleStartGame}
                 disabled={hostStarting}
                 className="w-full rounded-2xl py-3 font-semibold text-white bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:opacity-50"
               >
@@ -1360,11 +1398,10 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
                   key={player.id}
                   onClick={() => handlePlayerClick(player)}
                   disabled={player.isCurrentUser}
-                  className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors text-left ${
-                    player.isCurrentUser 
-                      ? 'bg-blue-50 border border-blue-200 cursor-default' 
-                      : 'bg-gray-50 hover:bg-gray-100 cursor-pointer'
-                  } ${kickingPlayerId === player.id ? 'opacity-50' : ''}`}
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors text-left ${player.isCurrentUser
+                    ? 'bg-blue-50 border border-blue-200 cursor-default'
+                    : 'bg-gray-50 hover:bg-gray-100 cursor-pointer'
+                    } ${kickingPlayerId === player.id ? 'opacity-50' : ''}`}
                 >
                   <Avatar className="size-9 flex-shrink-0">
                     <AvatarFallback className="bg-gradient-to-br from-blue-500 to-green-500 text-white text-xs font-semibold">
@@ -1418,11 +1455,10 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
                   key={player.id}
                   onClick={() => handlePlayerClick(player)}
                   disabled={player.isCurrentUser}
-                  className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors text-left ${
-                    player.isCurrentUser 
-                      ? 'bg-blue-50 border border-blue-200 cursor-default' 
-                      : 'bg-gray-50 hover:bg-gray-100 cursor-pointer'
-                  } ${kickingPlayerId === player.id ? 'opacity-50' : ''}`}
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors text-left ${player.isCurrentUser
+                    ? 'bg-blue-50 border border-blue-200 cursor-default'
+                    : 'bg-gray-50 hover:bg-gray-100 cursor-pointer'
+                    } ${kickingPlayerId === player.id ? 'opacity-50' : ''}`}
                 >
                   <Avatar className="size-9 flex-shrink-0">
                     <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-xs font-semibold">
@@ -1628,8 +1664,12 @@ export function QueueScreen({ onBack, onLeaveGame, gameData, isHost = false, onG
       {/* Share Game Modal */}
       {showShareModal && (
         <ShareGameModal
+          isOpen={showShareModal}
           gameData={gameData}
           onClose={() => setShowShareModal(false)}
+          onShare={() => {
+            setShowShareModal(false);
+          }}
         />
       )}
     </div>

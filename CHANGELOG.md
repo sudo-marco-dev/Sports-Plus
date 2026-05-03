@@ -16,6 +16,11 @@ All notable changes to this project will be documented in this file.
 - **Data:** Updated `mockData.ts` to include `subscriptionTier` ('FREE' | 'PREMIUM') across User and Organization interfaces.
 
 ### Changed
+- **Architecture:** Deprecated internal rating/reward states within `QueueScreen` to enforce a single source of truth for post-game flows.
+- **Routing:** Bridged `QueueScreen` MVP voting to the global application router via `onFinishGame`.
+- **Routing:** Fixed `App.tsx` to conditionally route Hosts to `PostGameSummaryScreen` and Participants to `ParticipantFeedbackScreen`.
+- **UX:** Chained the Participant flow so users rate the Organizer first, then seamlessly proceed to rate their teammates.
+- **Data:** Expanded mock participant data to simulate full 10-player rosters for accurate UI testing.
 - **UI Polish:** Refined `LimitReachedDialog` with mobile-first constraints, heavy `rounded-[2rem]` geometry, and centered iconography.
 - **UI Bug Fixes:** Forced `bg-[#10b981]` emerald overrides on primary buttons using `!` and inline styles to ensure visibility across all device states.
 - **Grammar & UX:** Updated organization dashboard visual cues to cleaner "Free Limit Reached (X/Y)" format.

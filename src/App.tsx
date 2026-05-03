@@ -122,6 +122,18 @@ export function AppContent() {
   const [postGameParticipants, setPostGameParticipants] = useState<any[]>([]);
   const [participantFeedbackData, setParticipantFeedbackData] = useState<any>(null);
 
+  const mockFullGameParticipants = [
+    { id: 'p1', name: 'Alex Chen', verified: true },
+    { id: 'p2', name: 'Maria Santos', verified: true },
+    { id: 'p3', name: 'John Doe', verified: false },
+    { id: 'p4', name: 'Sarah Lee', verified: true },
+    { id: 'p5', name: 'Mike Johnson', verified: true },
+    { id: 'p6', name: 'Emma Wilson', verified: false },
+    { id: 'p7', name: 'David Kim', verified: true },
+    { id: 'p8', name: 'Lisa Brown', verified: true },
+    { id: 'p9', name: 'Tom Anderson', verified: false },
+  ];
+
   useEffect(() => {
     if (currentScreen === 'splash') {
       // Deep link: skip to a specific screen via URL hash (e.g. /#org-dashboard)
@@ -327,13 +339,7 @@ export function AppContent() {
   };
 
   const handleGameFinish = () => {
-    // Generate mock participants for rating
-    const participants = [
-      { id: '1', name: 'John Doe', verified: true },
-      { id: '2', name: 'Maria Santos', verified: true },
-      { id: '3', name: 'Alex Chen', verified: false },
-    ];
-    setPostGameParticipants(participants);
+    setPostGameParticipants(mockFullGameParticipants);
     setCurrentScreen('post-game-summary');
   };
 
@@ -351,16 +357,22 @@ export function AppContent() {
     if (selectedGameId) {
       setMyGames((prev: any[]) => prev.filter((g: any) => g.id !== selectedGameId));
     }
+    // Clear all possible active game states
     setCreatedGameData(null);
+    setJoinedGames([]);
+    setJoinedGameData(null);
+    setSelectedGameId(null);
+
     setCurrentScreen('history');
     setActiveTab('home');
+    
     if (!isOrganization) {
       setUserData((prev: any) => ({
         ...prev,
-        points: prev.points + 100,
+        points: prev.points + 150, // Combined points for rating organizer + players
         gamesPlayed: prev.gamesPlayed + 1,
       }));
-      toast.success('Game completed! You earned 100 points.');
+      toast.success('Game completed! You earned 150 points for your feedback.');
     } else {
       toast.success('Event completed successfully!');
     }
@@ -372,23 +384,10 @@ export function AppContent() {
   };
 
   const handleParticipantFeedbackComplete = () => {
-    // Remove from joined games
-    setJoinedGames([]);
-    setJoinedGameData(null);
-    setSelectedGameId(null);
-    setParticipantFeedbackData(null);
-    setCurrentScreen('history');
-    setActiveTab('home');
-    if (!isOrganization) {
-      setUserData((prev: any) => ({
-        ...prev,
-        points: prev.points + 50,
-        gamesPlayed: prev.gamesPlayed + 1,
-      }));
-      toast.success('Feedback submitted! You earned 50 points.');
-    } else {
-      toast.success('Feedback submitted!');
-    }
+    setPostGameParticipants(mockFullGameParticipants);
+    setParticipantFeedbackData(null); 
+    setCurrentScreen('post-game-summary');
+    toast.success('Organizer feedback saved. Now rate your teammates!');
   };
 
   const handleVerifyAccount = () => {
@@ -791,13 +790,14 @@ export function AppContent() {
         />
       )}
 
-      {currentScreen === 'post-game-summary' && createdGameData && (
+      {currentScreen === 'post-game-summary' && (createdGameData || joinedGameData) && (
         <PostGameSummaryScreen
-          gameTitle={createdGameData.title}
+          gameTitle={createdGameData?.title || joinedGameData?.title || 'Game'}
           participants={postGameParticipants}
           onComplete={handlePostGameComplete}
           onBack={() => {
-            setCurrentScreen('creator-game-view');
+            // Safe fallback if they hit back
+            setCurrentScreen('home');
           }}
         />
       )}

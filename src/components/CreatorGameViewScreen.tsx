@@ -1,14 +1,11 @@
 import { useState } from 'react';
-import { ArrowLeft, MapPin, Calendar, Users, Clock, Star, CheckCircle2, XCircle, Trophy, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Users, Clock, Star, CheckCircle2, XCircle } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { ScrollArea } from './ui/scroll-area';
 import { Avatar, AvatarFallback } from './ui/avatar';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { MiniProfileCard } from './MiniProfileCard';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
 import { toast } from 'sonner';
 import { GameScoreVotingDialog } from './GameScoreVotingDialog';
 
@@ -45,7 +42,7 @@ const mockParticipants: Participant[] = [
 ];
 
 export function CreatorGameViewScreen({ 
-  gameId, 
+  gameId: _gameId, 
   gameData, 
   onBack, 
   onCancelGame,
@@ -57,14 +54,14 @@ export function CreatorGameViewScreen({
   const currentPlayers = participants.length;
 
   const handleRemovePlayer = (playerId: string) => {
-    setParticipants(prev => prev.filter(p => p.id !== playerId));
+    setParticipants((prev: Participant[]) => prev.filter((p: Participant) => p.id !== playerId));
   };
 
   const handleFinishGameClick = () => {
     setShowScoreDialog(true);
   };
 
-  const handleScoresSubmitted = (teamAScore: number, teamBScore: number) => {
+  const handleScoresSubmitted = (_teamAScore: number, _teamBScore: number) => {
     toast.success('Game completed successfully!');
     setTimeout(() => {
       setShowScoreDialog(false);
@@ -132,13 +129,13 @@ export function CreatorGameViewScreen({
           <div className="flex items-center justify-between">
             <h3 className="text-gray-900">Participants</h3>
             <Badge variant="outline" className="text-xs">
-              {participants.filter(p => p.verified).length} verified
+              {participants.filter((p: Participant) => p.verified).length} verified
             </Badge>
           </div>
 
           {participants.length > 0 ? (
             <div className="space-y-3">
-              {participants.map((participant) => (
+              {participants.map((participant: Participant) => (
                 <div
                   key={participant.id}
                   className="bg-white rounded-2xl shadow-lg p-4"
