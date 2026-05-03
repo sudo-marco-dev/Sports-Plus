@@ -44,7 +44,7 @@ import { mockGames, mockUsers } from './data/mockData';
 import { Toaster, toast } from 'sonner';
 import { MobileContainer } from './components/MobileContainer';
 
-type AppScreen = 
+type AppScreen =
   | 'splash'
   | 'onboarding'
   | 'login'
@@ -104,10 +104,10 @@ export function AppContent() {
     gamesCreatedThisWeek: 2,
   });
   const [myGames, setMyGames] = useState<Array<{
-    id: string; 
-    name: string; 
-    date: string; 
-    time: string; 
+    id: string;
+    name: string;
+    date: string;
+    time: string;
     location: string;
     verificationStatus: 'pending' | 'verified' | 'expired';
     confirmations: number;
@@ -167,7 +167,7 @@ export function AppContent() {
     // Persist the selected role into AuthContext so SubscriptionScreen exit routing works
     updateUser({ role: role as 'player' | 'organization', name: signUpData.fullName });
     setIsAuthenticated(true);
-    
+
     // Intercept with Subscription Screen
     setCurrentScreen('SubscriptionScreen');
     setActiveTab('home');
@@ -181,7 +181,7 @@ export function AppContent() {
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
-    
+
     switch (tab) {
       case 'home':
         setCurrentScreen('home');
@@ -226,13 +226,13 @@ export function AppContent() {
         toast.error('You can only join one game at a time. Leave your current game first.');
         return;
       }
-      
+
       // Check if user already created a game
       if (createdGameData) {
         toast.error('You cannot join a game while hosting one. Cancel your game first.');
         return;
       }
-      
+
       // Check if game is full
       const foundGame = mockGames.find((g) => g.id === gameId);
       if (foundGame && currentUser.isPWD && foundGame.hostId !== currentUser.id) {
@@ -248,9 +248,9 @@ export function AppContent() {
           read: false,
         });
       }
-      
+
       setJoinedGames([gameId]);
-      
+
       // Mock game data for the joined game
       const newJoinedGameData = {
         id: gameId,
@@ -263,9 +263,9 @@ export function AppContent() {
       };
       setJoinedGameData(newJoinedGameData);
       setSelectedGameId(gameId);
-      
+
       // Trigger PWD notification to host if applicable
-      
+
       toast.success('Joined game successfully!');
       // Navigate to QUEUE screen (same as clicking Queue button)
       setCurrentScreen('queue');
@@ -297,7 +297,7 @@ export function AppContent() {
       gamesCreatedToday: prev.gamesCreatedToday + 1,
       gamesCreatedThisWeek: prev.gamesCreatedThisWeek + 1,
     }));
-    
+
     // Store created game data and navigate to QUEUE screen
     setCreatedGameData({
       id: newGameId,
@@ -431,33 +431,17 @@ export function AppContent() {
   ].includes(currentScreen);
 
   const unreadMessages = 7; // Mock unread count
-  
+
   // Determine current game data and isHost status
   const currentGameData = createdGameData || joinedGameData;
   const isHostingGame = !!createdGameData;
-  
+
   // Check if user has an active game (created OR joined)
   const hasActiveGame = !!(createdGameData || joinedGameData);
 
   return (
     <MobileContainer>
-      {/* Notification Bell Icon - positioned in header if authenticated */}
-      {isAuthenticated && (
-        <div className="fixed top-4 right-4 z-50">
-          <button
-            onClick={() => setIsNotificationPanelOpen(!isNotificationPanelOpen)}
-            className="relative p-3 bg-white rounded-full shadow-lg hover:shadow-xl transition-shadow"
-          >
-            <Bell className="w-5 h-5 text-gray-700" strokeWidth={1.5} />
-            {unreadCount > 0 && (
-              <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </div>
-            )}
-          </button>
-          <NotificationPanel isOpen={isNotificationPanelOpen} onClose={() => setIsNotificationPanelOpen(false)} />
-        </div>
-      )}
+
 
       {/* Main App Content */}
       {currentScreen === 'splash' && (
@@ -465,7 +449,7 @@ export function AppContent() {
       )}
 
       {currentScreen === 'landing' && (
-        <LandingPage 
+        <LandingPage
           onGetStarted={() => {
             window.location.hash = '#signup';
             setCurrentScreen('signup');
@@ -486,14 +470,14 @@ export function AppContent() {
       )}
 
       {currentScreen === 'signup' && (
-        <SignUpScreen 
+        <SignUpScreen
           onSignUp={handleSignUp}
           onBack={() => setCurrentScreen('landing')}
         />
       )}
 
       {currentScreen === 'SubscriptionScreen' && (
-        <SubscriptionScreen 
+        <SubscriptionScreen
           onSelectTier={(tier) => {
             updateUser({ subscriptionTier: tier });
             if (currentUser?.role === 'organization') {
@@ -531,8 +515,8 @@ export function AppContent() {
       )}
 
       {currentScreen === 'home' && (
-        <HomeScreen 
-          onOpenChat={handleOpenChat} 
+        <HomeScreen
+          onOpenChat={handleOpenChat}
           myGames={myGames}
           onManageGame={handleManageGame}
           onJoinGame={handleJoinGame}
@@ -552,7 +536,7 @@ export function AppContent() {
       )}
 
       {currentScreen === 'queue' && currentGameData && (
-        <QueueScreen 
+        <QueueScreen
           gameData={currentGameData}
           isHost={isHostingGame}
           onBack={() => {
@@ -576,7 +560,7 @@ export function AppContent() {
       )}
 
       {currentScreen === 'chat' && (
-        <ChatScreen 
+        <ChatScreen
           selectedChatId={selectedChatId}
           onBack={() => {
             setCurrentScreen('home');
@@ -586,7 +570,7 @@ export function AppContent() {
       )}
 
       {currentScreen === 'create' && !createdGameData && !joinedGameData && (
-        <CreateGameScreen 
+        <CreateGameScreen
           onCreateGame={handleCreateGame}
           isVerified={userData.isVerified}
           gamesCreatedToday={userData.gamesCreatedToday}
@@ -597,7 +581,7 @@ export function AppContent() {
       {currentScreen === 'leaderboard' && <LeaderboardScreen />}
 
       {currentScreen === 'events' && (
-        <EventsScreen 
+        <EventsScreen
           onBack={() => {
             setCurrentScreen('home');
             setActiveTab('home');
@@ -631,7 +615,7 @@ export function AppContent() {
       )}
 
       {currentScreen === 'schedules' && (
-        <SchedulesScreen 
+        <SchedulesScreen
           onBack={() => {
             setCurrentScreen('home');
             setActiveTab('home');
@@ -640,7 +624,7 @@ export function AppContent() {
       )}
 
       {currentScreen === 'teams' && (
-        <TeamsScreen 
+        <TeamsScreen
           onBack={() => {
             setCurrentScreen('home');
             setActiveTab('home');
@@ -649,14 +633,14 @@ export function AppContent() {
             setSelectedTeamId(teamId);
             setCurrentScreen('team-detail');
           }}
-          joinedGameData={joinedGameData} 
+          joinedGameData={joinedGameData}
           createdGameData={createdGameData}
         />
       )}
 
 
       {currentScreen === 'team-detail' && selectedTeamId && (
-        <TeamDetailScreen 
+        <TeamDetailScreen
           teamId={selectedTeamId}
           onBack={() => setCurrentScreen('teams')}
           currentUserId={currentUser?.id}
@@ -664,7 +648,7 @@ export function AppContent() {
       )}
 
       {currentScreen === 'tournaments' && (
-        <TournamentScreen 
+        <TournamentScreen
           onBack={() => {
             setCurrentScreen('home');
             setActiveTab('home');
@@ -677,7 +661,7 @@ export function AppContent() {
       )}
 
       {currentScreen === 'tournament-detail' && selectedTournamentId && (
-        <TournamentDetailScreen 
+        <TournamentDetailScreen
           tournamentId={selectedTournamentId}
           onBack={() => setCurrentScreen('tournaments')}
           currentUserId={currentUser?.id}
@@ -685,7 +669,7 @@ export function AppContent() {
       )}
 
       {currentScreen === 'socials' && (
-        <SocialsScreen 
+        <SocialsScreen
           onBack={() => {
             setCurrentScreen('home');
             setActiveTab('home');
@@ -694,7 +678,7 @@ export function AppContent() {
       )}
 
       {currentScreen === 'profile' && (
-        <ProfileScreen 
+        <ProfileScreen
           onSettings={() => setCurrentScreen('settings')}
           onViewAchievements={() => setCurrentScreen('points-badges')}
           onViewHistory={() => setCurrentScreen('history')}
@@ -705,7 +689,7 @@ export function AppContent() {
       )}
 
       {currentScreen === 'history' && (
-        <GameHistoryScreen 
+        <GameHistoryScreen
           onBack={() => {
             setCurrentScreen('home');
             setActiveTab('home');
@@ -714,7 +698,7 @@ export function AppContent() {
       )}
 
       {currentScreen === 'points-badges' && (
-        <PointsBadgesScreen 
+        <PointsBadgesScreen
           onBack={() => {
             setCurrentScreen('profile');
             setActiveTab('profile');
@@ -830,17 +814,17 @@ export function AppContent() {
       )}
 
       {showMainNavigation && (
-        <BottomNavigation 
-          activeTab={activeTab} 
+        <BottomNavigation
+          activeTab={activeTab}
           onTabChange={handleTabChange}
           unreadMessages={unreadMessages}
           hasActiveGame={hasActiveGame}
         />
       )}
-      
+
       <Toaster position="top-center" />
-      </MobileContainer>
-    );
+    </MobileContainer>
+  );
 }
 
 export default function App() {
